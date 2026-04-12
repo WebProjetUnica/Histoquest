@@ -1,0 +1,5 @@
+data/games/
+data/users.json
+data/scores.json
+vendor/
+.DS_Store
