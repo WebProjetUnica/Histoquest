@@ -1,0 +1,441 @@
+/* ============================================================
+   components.css — Boutons, Cartes, Timer, Overlays
+   HistoQuest · étape 1
+   ============================================================
+   Un "composant" = un élément d'interface réutilisable.
+   Convention de nommage : BEM (Block__Element--Modifier)
+     .btn            → block
+     .btn--primary   → modifier (variante)
+   ============================================================ */
+
+
+/* ── 1. BOUTONS ──────────────────────────────────────────────
+   .btn est la base commune à tous les boutons.
+   Les modificateurs (.btn--primary, etc.) ajoutent la couleur.
+   ──────────────────────────────────────────────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-xs);
+
+  padding: var(--space-sm) var(--space-lg);
+  border-radius: var(--radius);
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  border: 2px solid transparent;
+
+  transition:
+    background-color var(--transition-fast),
+    color            var(--transition-fast),
+    transform        var(--transition-fast),
+    box-shadow       var(--transition-fast);
+
+  /* Empêche le bouton de rétrécir dans un Flex parent */
+  flex-shrink: 0;
+}
+
+/* Retour tactile au clic */
+.btn:active {
+  transform: translateY(1px);
+}
+
+/* Bouton désactivé */
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* — Variante principale : action positive (voter, confirmer) */
+.btn--primary {
+  background-color: var(--teal);
+  color: #fff;
+  box-shadow: var(--shadow-btn);
+}
+.btn--primary:hover:not(:disabled) {
+  background-color: #0d5f49;   /* teal assombri */
+  box-shadow: 0 4px 10px rgba(15, 110, 86, 0.35);
+}
+
+/* — Variante secondaire : action neutre (annuler, retour) */
+.btn--secondary {
+  background-color: transparent;
+  color: var(--navy);
+  border-color: var(--navy);
+}
+.btn--secondary:hover:not(:disabled) {
+  background-color: var(--navy);
+  color: #fff;
+}
+
+/* — Variante danger : erreur, signalement */
+.btn--danger {
+  background-color: var(--coral);
+  color: #fff;
+}
+.btn--danger:hover:not(:disabled) {
+  background-color: #7a2f15;
+}
+
+/* — Bouton pays (les 4 choix de vote sur la carte) */
+.btn--country {
+  width: 100%;
+  padding: var(--space-sm) var(--space-md);
+  background-color: var(--bg-card);
+  color: var(--navy);
+  border: 2px solid rgba(27, 42, 74, 0.18);
+  border-radius: var(--radius);
+  text-align: left;
+  font-size: 1rem;
+}
+.btn--country:hover:not(:disabled) {
+  border-color: var(--teal);
+  background-color: rgba(15, 110, 86, 0.06);
+}
+.btn--country.selected {
+  border-color: var(--teal);
+  background-color: rgba(15, 110, 86, 0.12);
+  color: var(--teal);
+  font-weight: 700;
+}
+
+/* — Boutons OUI / NON (vote d'indice) */
+.btn--yes {
+  background-color: var(--teal);
+  color: #fff;
+  flex: 1;
+}
+.btn--no {
+  background-color: var(--coral);
+  color: #fff;
+  flex: 1;
+}
+
+
+/* ── 2. CARTE ÉVÉNEMENT ──────────────────────────────────────
+   Panneau affiché dans la colonne gauche de game.php.
+   Présente l'événement historique généré par l'IA.
+   ──────────────────────────────────────────────────────────── */
+.event-card {
+  background-color: var(--bg-card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-card);
+  padding: var(--space-md);
+  border-top: 4px solid var(--navy); /* accent coloré en haut */
+}
+
+.event-card__era {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--purple);
+  margin-bottom: var(--space-xs);
+}
+
+.event-card__title {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  color: var(--navy);
+  margin-bottom: var(--space-sm);
+  line-height: 1.3;
+}
+
+.event-card__description {
+  font-size: 0.9rem;
+  color: var(--text-main);
+  line-height: 1.6;
+}
+
+/* Zone d'indice — masquée par défaut, révélée par JS */
+.event-card__hint {
+  display: none;                /* JS ajoute la classe .visible */
+  margin-top: var(--space-md);
+  padding: var(--space-sm) var(--space-md);
+  background-color: rgba(186, 117, 23, 0.10);
+  border-left: 3px solid var(--amber);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  font-size: 0.88rem;
+  color: var(--text-main);
+}
+.event-card__hint.visible {
+  display: block;
+}
+
+
+/* ── 3. TIMER ────────────────────────────────────────────────
+   Barre de progression + compteur numérique.
+   La largeur de .timer__bar est pilotée par JS via style.width.
+   ──────────────────────────────────────────────────────────── */
+.timer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+/* Ligne numérique : icône ⏱ + secondes restantes */
+.timer__display {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  color: var(--text-light);
+}
+
+.timer__seconds {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: bold;
+  color: var(--teal);           /* devient amber puis coral via JS */
+  transition: color var(--transition-normal);
+}
+
+/* État urgence : JS ajoute .timer--warning (< 10s) */
+.timer--warning .timer__seconds {
+  color: var(--amber);
+  animation: pulse 0.8s ease-in-out infinite;
+}
+
+/* État critique : JS ajoute .timer--danger (< 5s) */
+.timer--danger .timer__seconds {
+  color: var(--coral);
+}
+
+/* Piste de la barre de progression */
+.timer__track {
+  height: 8px;
+  background-color: rgba(27, 42, 74, 0.12);
+  border-radius: 99px;          /* capsule arrondie             */
+  overflow: hidden;
+}
+
+/* Barre qui se réduit — JS modifie style.width en % */
+.timer__bar {
+  height: 100%;
+  width: 100%;                  /* pleine au départ             */
+  background-color: var(--teal);
+  border-radius: 99px;
+  transition:
+    width 1s linear,            /* réduction fluide chaque seconde */
+    background-color var(--transition-normal);
+}
+
+.timer--warning .timer__bar {
+  background-color: var(--amber);
+}
+
+.timer--danger .timer__bar {
+  background-color: var(--coral);
+}
+
+/* Animation pulse sur les secondes en urgence */
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50%       { transform: scale(1.08); }
+}
+
+
+/* ── 4. CLASSEMENT (colonne droite) ──────────────────────────
+   Liste des joueurs avec leurs scores, sur fond --navy.
+   ──────────────────────────────────────────────────────────── */
+.scoreboard__title {
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: rgba(241, 239, 232, 0.55);
+  margin-bottom: var(--space-sm);
+}
+
+.scoreboard__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.score-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-sm);
+  transition: background-color var(--transition-fast);
+}
+
+/* Mise en évidence du joueur courant */
+.score-item--me {
+  background-color: rgba(241, 239, 232, 0.10);
+}
+
+.score-item__rank {
+  font-size: 0.75rem;
+  color: rgba(241, 239, 232, 0.40);
+  width: 16px;
+  text-align: center;
+}
+
+.score-item__pseudo {
+  flex: 1;
+  font-size: 0.9rem;
+  color: var(--text-on-dark);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.score-item__points {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: bold;
+  color: var(--amber);
+}
+
+/* Badge de variation de score (+3, +1…) affiché brièvement par JS */
+.score-badge {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: var(--radius-sm);
+  background-color: var(--teal);
+  color: #fff;
+  opacity: 0;
+  transform: translateY(4px);
+  transition:
+    opacity var(--transition-normal),
+    transform var(--transition-normal);
+}
+
+.score-badge.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+
+/* ── 5. OVERLAYS MODAUX ──────────────────────────────────────
+   Un overlay = un fond semi-transparent + une boîte centrée.
+   Masqué par défaut. JS ajoute .overlay--open pour l'afficher.
+   ──────────────────────────────────────────────────────────── */
+
+/* Fond obscurcissant */
+.overlay {
+  position: fixed;
+  inset: 0;                     /* raccourci pour top/right/bottom/left: 0 */
+  background-color: rgba(27, 42, 74, 0.60);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+
+  /* Masqué par défaut avec opacity + pointer-events */
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--transition-normal);
+}
+
+.overlay--open {
+  opacity: 1;
+  pointer-events: all;
+}
+
+/* Boîte de contenu */
+.overlay__box {
+  background-color: var(--bg-card);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-modal);
+  padding: var(--space-xl);
+  width: min(480px, 90vw);      /* 480px max, 90% sur mobile   */
+  max-height: 80vh;
+  overflow-y: auto;
+
+  transform: translateY(12px);
+  transition: transform var(--transition-normal);
+}
+
+.overlay--open .overlay__box {
+  transform: translateY(0);
+}
+
+.overlay__title {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  color: var(--navy);
+  margin-bottom: var(--space-md);
+}
+
+.overlay__body {
+  font-size: 0.95rem;
+  color: var(--text-main);
+  margin-bottom: var(--space-lg);
+  line-height: 1.6;
+}
+
+/* Rangée de boutons en bas de l'overlay */
+.overlay__actions {
+  display: flex;
+  gap: var(--space-sm);
+  justify-content: flex-end;
+}
+
+/* — Overlay contestation (textarea pour rédiger l'argument) */
+.contest-textarea {
+  width: 100%;
+  min-height: 100px;
+  padding: var(--space-sm);
+  border: 1.5px solid rgba(27, 42, 74, 0.20);
+  border-radius: var(--radius);
+  font-size: 0.95rem;
+  color: var(--text-main);
+  resize: vertical;
+  transition: border-color var(--transition-fast);
+}
+
+.contest-textarea:focus {
+  outline: none;
+  border-color: var(--teal);
+}
+
+/* — Overlay invitation (dans le lobby) */
+.invite-overlay .overlay__box {
+  border-top: 4px solid var(--purple);
+}
+
+
+/* ── 6. BADGE VOTE (coloration divergente) ───────────────────
+   Affiché lors d'une contestation : vert = majorité, orange = minorité
+   ──────────────────────────────────────────────────────────── */
+.vote-tag {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 99px;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.vote-tag--majority {
+  background-color: rgba(26, 107, 58, 0.12);
+  color: var(--vote-majority);
+}
+
+.vote-tag--minority {
+  background-color: rgba(180, 83, 9, 0.12);
+  color: var(--vote-minority);
+}
+
+
+/* ── 7. COMPTEUR DE VOTES ────────────────────────────────────
+   "3 / 5 joueurs ont voté" affiché sous les boutons pays
+   ──────────────────────────────────────────────────────────── */
+.vote-counter {
+  font-size: 0.85rem;
+  color: var(--text-light);
+  text-align: center;
+  padding: var(--space-xs) 0;
+}
+
+.vote-counter__current {
+  font-weight: 700;
+  color: var(--navy);
+}
