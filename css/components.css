@@ -129,7 +129,9 @@
 }
 
 
-/* ── 2. CARTE ÉVÉNEMENT ──────────────────────────────────────*/
+/* ── 2. CARTE ÉVÉNEMENT ──────────────────────────────────────
+   Classes du binôme : .event-card__year, .event-card__desc
+   ──────────────────────────────────────────────────────────── */
 .event-card {
   background-color: var(--bg-card);
   border-radius: var(--radius);
@@ -138,7 +140,8 @@
   border-top: 4px solid var(--navy);
 }
 
-.event-card__era {
+/* .event-card__year remplace .event-card__era */
+.event-card__year {
   font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -155,68 +158,174 @@
   line-height: 1.3;
 }
 
-.event-card__description {
+/* .event-card__desc remplace .event-card__description */
+.event-card__desc {
   font-size: 0.9rem;
   color: var(--text-main);
   line-height: 1.6;
 }
 
-/* Zone d'indice — masquée par défaut, révélée par JS */
-.event-card__hint {
-  display: none;
-  margin-top: var(--space-md);
+/* Zone indice — .hint-zone avec classe .hidden gérée par JS */
+.hint-zone {
   padding: var(--space-sm) var(--space-md);
   background-color: rgba(186, 117, 23, 0.10);
   border-left: 3px solid var(--amber);
   border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+}
+
+.hint-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--amber);
+  margin-bottom: var(--space-xs);
+}
+
+.hint-text {
   font-size: 0.88rem;
   color: var(--text-main);
 }
-.event-card__hint.visible {
-  display: block;
+
+/* Compteur vote indice dans le modal */
+.hint-vote-count {
+  font-size: 0.9rem;
+  color: var(--text-light);
+  margin-bottom: var(--space-md);
+}
+
+/* Votes divergents dans la contestation */
+.contest-votes {
+  margin: var(--space-sm) 0;
+  font-size: 0.9rem;
+}
+
+/* Textarea de contestation */
+.contest-input {
+  width: 100%;
+  min-height: 100px;
+  padding: var(--space-sm);
+  border: 1.5px solid rgba(27, 42, 74, 0.20);
+  border-radius: var(--radius);
+  font-size: 0.95rem;
+  color: var(--text-main);
+  resize: vertical;
+  margin-bottom: var(--space-md);
+  transition: border-color var(--transition-fast);
+}
+.contest-input:focus {
+  outline: none;
+  border-color: var(--teal);
+}
+
+/* Texte contestation visible pour les autres joueurs */
+.contest-text {
+  font-style: italic;
+  color: var(--text-light);
+  font-size: 0.9rem;
+  margin-bottom: var(--space-md);
+}
+
+/* Boutons de vote pays */
+.vote-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+/* .vote-btn = bouton pays dans le HTML du binôme */
+.vote-btn {
+  width: 100%;
+  padding: var(--space-sm) var(--space-md);
+  background-color: var(--bg-card);
+  color: var(--navy);
+  border: 2px solid rgba(27, 42, 74, 0.18);
+  border-radius: var(--radius);
+  text-align: left;
+  font-size: 1rem;
+  cursor: pointer;
+  transition:
+    border-color var(--transition-fast),
+    background-color var(--transition-fast);
+}
+.vote-btn:hover:not(:disabled) {
+  border-color: var(--teal);
+  background-color: rgba(15, 110, 86, 0.06);
+}
+.vote-btn.selected {
+  border-color: var(--teal);
+  background-color: rgba(15, 110, 86, 0.12);
+  color: var(--teal);
+  font-weight: 700;
+}
+
+/* Compteur de votes */
+.vote-count {
+  font-size: 0.85rem;
+  color: var(--text-light);
+  text-align: center;
+  padding: var(--space-xs) 0;
+}
+
+/* Bouton amber — demander un indice */
+.btn-amber {
+  background-color: transparent;
+  color: var(--amber);
+  border: 2px solid var(--amber);
+}
+.btn-amber:hover:not(:disabled) {
+  background-color: rgba(186, 117, 23, 0.10);
+}
+
+/* Classe utilitaire .hidden — JS l'ajoute/retire pour masquer */
+.hidden {
+  display: none !important;
 }
 
 
-/* ── 3. TIMER ────────────────────────────────────────────────*/
-.timer {
+/* ── 3. TIMER ────────────────────────────────────────────────
+   Classes du binôme :
+   .timer-zone     = conteneur
+   .timer-text     = chiffre des secondes
+   .timer-bar      = piste de la barre
+   .timer-bar__fill = barre animée (JS modifie style.width)
+   ──────────────────────────────────────────────────────────── */
+.timer-zone {
   display: flex;
   flex-direction: column;
   gap: var(--space-xs);
 }
 
-.timer__display {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 0.85rem;
-  color: var(--text-light);
-}
-
-.timer__seconds {
+.timer-text {
   font-family: var(--font-display);
   font-size: 1.4rem;
   font-weight: bold;
   color: var(--teal);
+  text-align: center;
   transition: color var(--transition-normal);
 }
 
-.timer--warning .timer__seconds {
+/* JS ajoute .timer--warning sur .timer-zone quand < 10s */
+.timer--warning .timer-text {
   color: var(--amber);
   animation: pulse 0.8s ease-in-out infinite;
 }
 
-.timer--danger .timer__seconds {
+/* JS ajoute .timer--danger sur .timer-zone quand < 5s */
+.timer--danger .timer-text {
   color: var(--coral);
 }
 
-.timer__track {
+/* Piste de la barre */
+.timer-bar {
   height: 8px;
   background-color: rgba(27, 42, 74, 0.12);
   border-radius: 99px;
   overflow: hidden;
 }
 
-.timer__bar {
+/* Barre qui se réduit */
+.timer-bar__fill {
   height: 100%;
   width: 100%;
   background-color: var(--teal);
@@ -226,8 +335,8 @@
     background-color var(--transition-normal);
 }
 
-.timer--warning .timer__bar { background-color: var(--amber); }
-.timer--danger  .timer__bar { background-color: var(--coral); }
+.timer--warning .timer-bar__fill { background-color: var(--amber); }
+.timer--danger  .timer-bar__fill { background-color: var(--coral); }
 
 @keyframes pulse {
   0%, 100% { transform: scale(1); }
@@ -235,17 +344,25 @@
 }
 
 
-/* ── 4. CLASSEMENT (colonne droite) ──────────────────────────*/
-.scoreboard__title {
+/* ── 4. CLASSEMENT (colonne droite) ──────────────────────────
+   Classes du binôme : .panel-title, .scores-list, .team-list
+   ──────────────────────────────────────────────────────────── */
+.panel-title {
   font-family: var(--font-display);
   font-size: 0.85rem;
   text-transform: uppercase;
   letter-spacing: 0.1em;
   color: rgba(241, 239, 232, 0.55);
   margin-bottom: var(--space-sm);
+  margin-top: var(--space-md);
 }
 
-.scoreboard__list {
+.panel-title:first-child {
+  margin-top: 0;
+}
+
+.scores-list,
+.team-list {
   display: flex;
   flex-direction: column;
   gap: var(--space-xs);

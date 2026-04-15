@@ -97,7 +97,7 @@
 }
 
 /* Colonne gauche */
-.game-panel--left {
+.game-panel-left {
   display: flex;
   flex-direction: column;
   gap: var(--space-md);
@@ -108,14 +108,14 @@
 }
 
 /* Colonne centrale — la carte prend tout l'espace disponible */
-.game-panel--center {
+.game-map {
   position: relative;            /* ancre pour éléments absolus  */
   background-color: #D6E4EC;    /* bleu-gris neutre pour la carte */
   overflow: hidden;
 }
 
 /* Colonne droite — classement */
-.game-panel--right {
+.game-panel-right {
   display: flex;
   flex-direction: column;
   gap: var(--space-sm);
