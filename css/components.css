@@ -1,17 +1,17 @@
 /* ============================================================
    components.css — Boutons, Cartes, Timer, Overlays
-   HistoQuest · étape 1
+   HistoQuest · étape 1 (adapté au HTML du binôme)
    ============================================================
-   Un "composant" = un élément d'interface réutilisable.
-   Convention de nommage : BEM (Block__Element--Modifier)
-     .btn            → block
-     .btn--primary   → modifier (variante)
+   Convention de nommage : tiret simple, comme le HTML du binôme
+     .btn-primary   → variante principale
+     .btn-ghost     → variante discrète
+     .btn-full      → pleine largeur
    ============================================================ */
 
 
 /* ── 1. BOUTONS ──────────────────────────────────────────────
    .btn est la base commune à tous les boutons.
-   Les modificateurs (.btn--primary, etc.) ajoutent la couleur.
+   Les variantes (.btn-primary, etc.) ajoutent la couleur.
    ──────────────────────────────────────────────────────────── */
 .btn {
   display: inline-flex;
@@ -33,7 +33,6 @@
     transform        var(--transition-fast),
     box-shadow       var(--transition-fast);
 
-  /* Empêche le bouton de rétrécir dans un Flex parent */
   flex-shrink: 0;
 }
 
@@ -50,38 +49,53 @@
 }
 
 /* — Variante principale : action positive (voter, confirmer) */
-.btn--primary {
+.btn-primary {
   background-color: var(--teal);
   color: #fff;
   box-shadow: var(--shadow-btn);
 }
-.btn--primary:hover:not(:disabled) {
-  background-color: #0d5f49;   /* teal assombri */
+.btn-primary:hover:not(:disabled) {
+  background-color: #0d5f49;
   box-shadow: 0 4px 10px rgba(15, 110, 86, 0.35);
 }
 
-/* — Variante secondaire : action neutre (annuler, retour) */
-.btn--secondary {
+/* — Variante fantôme : action secondaire (refuser, annuler) */
+.btn-ghost {
   background-color: transparent;
-  color: var(--navy);
-  border-color: var(--navy);
+  color: var(--text-on-dark);   /* utilisé dans la nav sur fond navy */
+  border-color: rgba(241, 239, 232, 0.35);
 }
-.btn--secondary:hover:not(:disabled) {
-  background-color: var(--navy);
-  color: #fff;
+.btn-ghost:hover:not(:disabled) {
+  background-color: rgba(241, 239, 232, 0.12);
 }
 
-/* — Variante danger : erreur, signalement */
-.btn--danger {
+/* Version ghost sur fond clair (ex: overlay) */
+.overlay .btn-ghost,
+.modal .btn-ghost {
+  color: var(--text-main);
+  border-color: rgba(27, 42, 74, 0.20);
+}
+.overlay .btn-ghost:hover:not(:disabled),
+.modal .btn-ghost:hover:not(:disabled) {
+  background-color: rgba(27, 42, 74, 0.06);
+}
+
+/* — Pleine largeur */
+.btn-full {
+  width: 100%;
+}
+
+/* — Variante danger */
+.btn-danger {
   background-color: var(--coral);
   color: #fff;
 }
-.btn--danger:hover:not(:disabled) {
+.btn-danger:hover:not(:disabled) {
   background-color: #7a2f15;
 }
 
-/* — Bouton pays (les 4 choix de vote sur la carte) */
-.btn--country {
+/* — Bouton pays (les 4 choix de vote) */
+.btn-country {
   width: 100%;
   padding: var(--space-sm) var(--space-md);
   background-color: var(--bg-card);
@@ -91,11 +105,11 @@
   text-align: left;
   font-size: 1rem;
 }
-.btn--country:hover:not(:disabled) {
+.btn-country:hover:not(:disabled) {
   border-color: var(--teal);
   background-color: rgba(15, 110, 86, 0.06);
 }
-.btn--country.selected {
+.btn-country.selected {
   border-color: var(--teal);
   background-color: rgba(15, 110, 86, 0.12);
   color: var(--teal);
@@ -103,28 +117,25 @@
 }
 
 /* — Boutons OUI / NON (vote d'indice) */
-.btn--yes {
+.btn-yes {
   background-color: var(--teal);
   color: #fff;
   flex: 1;
 }
-.btn--no {
+.btn-no {
   background-color: var(--coral);
   color: #fff;
   flex: 1;
 }
 
 
-/* ── 2. CARTE ÉVÉNEMENT ──────────────────────────────────────
-   Panneau affiché dans la colonne gauche de game.php.
-   Présente l'événement historique généré par l'IA.
-   ──────────────────────────────────────────────────────────── */
+/* ── 2. CARTE ÉVÉNEMENT ──────────────────────────────────────*/
 .event-card {
   background-color: var(--bg-card);
   border-radius: var(--radius);
   box-shadow: var(--shadow-card);
   padding: var(--space-md);
-  border-top: 4px solid var(--navy); /* accent coloré en haut */
+  border-top: 4px solid var(--navy);
 }
 
 .event-card__era {
@@ -152,7 +163,7 @@
 
 /* Zone d'indice — masquée par défaut, révélée par JS */
 .event-card__hint {
-  display: none;                /* JS ajoute la classe .visible */
+  display: none;
   margin-top: var(--space-md);
   padding: var(--space-sm) var(--space-md);
   background-color: rgba(186, 117, 23, 0.10);
@@ -166,17 +177,13 @@
 }
 
 
-/* ── 3. TIMER ────────────────────────────────────────────────
-   Barre de progression + compteur numérique.
-   La largeur de .timer__bar est pilotée par JS via style.width.
-   ──────────────────────────────────────────────────────────── */
+/* ── 3. TIMER ────────────────────────────────────────────────*/
 .timer {
   display: flex;
   flex-direction: column;
   gap: var(--space-xs);
 }
 
-/* Ligne numérique : icône ⏱ + secondes restantes */
 .timer__display {
   display: flex;
   align-items: center;
@@ -189,58 +196,46 @@
   font-family: var(--font-display);
   font-size: 1.4rem;
   font-weight: bold;
-  color: var(--teal);           /* devient amber puis coral via JS */
+  color: var(--teal);
   transition: color var(--transition-normal);
 }
 
-/* État urgence : JS ajoute .timer--warning (< 10s) */
 .timer--warning .timer__seconds {
   color: var(--amber);
   animation: pulse 0.8s ease-in-out infinite;
 }
 
-/* État critique : JS ajoute .timer--danger (< 5s) */
 .timer--danger .timer__seconds {
   color: var(--coral);
 }
 
-/* Piste de la barre de progression */
 .timer__track {
   height: 8px;
   background-color: rgba(27, 42, 74, 0.12);
-  border-radius: 99px;          /* capsule arrondie             */
+  border-radius: 99px;
   overflow: hidden;
 }
 
-/* Barre qui se réduit — JS modifie style.width en % */
 .timer__bar {
   height: 100%;
-  width: 100%;                  /* pleine au départ             */
+  width: 100%;
   background-color: var(--teal);
   border-radius: 99px;
   transition:
-    width 1s linear,            /* réduction fluide chaque seconde */
+    width 1s linear,
     background-color var(--transition-normal);
 }
 
-.timer--warning .timer__bar {
-  background-color: var(--amber);
-}
+.timer--warning .timer__bar { background-color: var(--amber); }
+.timer--danger  .timer__bar { background-color: var(--coral); }
 
-.timer--danger .timer__bar {
-  background-color: var(--coral);
-}
-
-/* Animation pulse sur les secondes en urgence */
 @keyframes pulse {
   0%, 100% { transform: scale(1); }
   50%       { transform: scale(1.08); }
 }
 
 
-/* ── 4. CLASSEMENT (colonne droite) ──────────────────────────
-   Liste des joueurs avec leurs scores, sur fond --navy.
-   ──────────────────────────────────────────────────────────── */
+/* ── 4. CLASSEMENT (colonne droite) ──────────────────────────*/
 .scoreboard__title {
   font-family: var(--font-display);
   font-size: 0.85rem;
@@ -265,35 +260,14 @@
   transition: background-color var(--transition-fast);
 }
 
-/* Mise en évidence du joueur courant */
 .score-item--me {
   background-color: rgba(241, 239, 232, 0.10);
 }
 
-.score-item__rank {
-  font-size: 0.75rem;
-  color: rgba(241, 239, 232, 0.40);
-  width: 16px;
-  text-align: center;
-}
+.score-item__rank   { font-size: 0.75rem; color: rgba(241,239,232,0.40); width: 16px; text-align: center; }
+.score-item__pseudo { flex: 1; font-size: 0.9rem; color: var(--text-on-dark); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.score-item__points { font-family: var(--font-display); font-size: 1rem; font-weight: bold; color: var(--amber); }
 
-.score-item__pseudo {
-  flex: 1;
-  font-size: 0.9rem;
-  color: var(--text-on-dark);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.score-item__points {
-  font-family: var(--font-display);
-  font-size: 1rem;
-  font-weight: bold;
-  color: var(--amber);
-}
-
-/* Badge de variation de score (+3, +1…) affiché brièvement par JS */
 .score-badge {
   font-size: 0.75rem;
   font-weight: 700;
@@ -303,33 +277,23 @@
   color: #fff;
   opacity: 0;
   transform: translateY(4px);
-  transition:
-    opacity var(--transition-normal),
-    transform var(--transition-normal);
+  transition: opacity var(--transition-normal), transform var(--transition-normal);
 }
-
-.score-badge.visible {
-  opacity: 1;
-  transform: translateY(0);
-}
+.score-badge.visible { opacity: 1; transform: translateY(0); }
 
 
 /* ── 5. OVERLAYS MODAUX ──────────────────────────────────────
-   Un overlay = un fond semi-transparent + une boîte centrée.
-   Masqué par défaut. JS ajoute .overlay--open pour l'afficher.
+   Le binôme utilise .overlay comme fond + .modal comme boîte.
+   JS ajoute .overlay--open pour afficher.
    ──────────────────────────────────────────────────────────── */
-
-/* Fond obscurcissant */
 .overlay {
   position: fixed;
-  inset: 0;                     /* raccourci pour top/right/bottom/left: 0 */
+  inset: 0;
   background-color: rgba(27, 42, 74, 0.60);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 200;
-
-  /* Masqué par défaut avec opacity + pointer-events */
   opacity: 0;
   pointer-events: none;
   transition: opacity var(--transition-normal);
@@ -340,46 +304,51 @@
   pointer-events: all;
 }
 
-/* Boîte de contenu */
-.overlay__box {
+/* Boîte de contenu — .modal dans le HTML du binôme */
+.modal {
   background-color: var(--bg-card);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-modal);
   padding: var(--space-xl);
-  width: min(480px, 90vw);      /* 480px max, 90% sur mobile   */
+  width: min(480px, 90vw);
   max-height: 80vh;
   overflow-y: auto;
-
   transform: translateY(12px);
   transition: transform var(--transition-normal);
 }
 
-.overlay--open .overlay__box {
+.overlay--open .modal {
   transform: translateY(0);
 }
 
-.overlay__title {
+/* Titre et corps du modal */
+.modal__title {
   font-family: var(--font-display);
   font-size: 1.2rem;
   color: var(--navy);
   margin-bottom: var(--space-md);
 }
 
-.overlay__body {
+.modal p {
   font-size: 0.95rem;
   color: var(--text-main);
   margin-bottom: var(--space-lg);
   line-height: 1.6;
 }
 
-/* Rangée de boutons en bas de l'overlay */
-.overlay__actions {
+/* Rangée de boutons en bas */
+.modal-actions {
   display: flex;
   gap: var(--space-sm);
   justify-content: flex-end;
 }
 
-/* — Overlay contestation (textarea pour rédiger l'argument) */
+/* Overlay invitation — accent violet en haut */
+#overlay-invitation .modal {
+  border-top: 4px solid var(--purple);
+}
+
+/* Textarea contestation */
 .contest-textarea {
   width: 100%;
   min-height: 100px;
@@ -391,21 +360,132 @@
   resize: vertical;
   transition: border-color var(--transition-fast);
 }
+.contest-textarea:focus { outline: none; border-color: var(--teal); }
 
-.contest-textarea:focus {
+
+/* ── 6. FORMULAIRES AUTH ─────────────────────────────────────
+   Pages index.php (connexion) et auth.php (inscription)
+   ──────────────────────────────────────────────────────────── */
+.auth-container {
+  width: min(420px, 90vw);
+  margin: var(--space-xl) auto;
+  background-color: var(--bg-card);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-modal);
+  overflow: hidden;
+}
+
+/* Onglets Connexion / Inscription */
+.auth-tabs {
+  display: flex;
+  border-bottom: 2px solid rgba(27, 42, 74, 0.08);
+}
+
+.auth-tab {
+  flex: 1;
+  padding: var(--space-md);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-light);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color var(--transition-fast), border-bottom var(--transition-fast);
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+}
+
+.auth-tab--active {
+  color: var(--navy);
+  border-bottom-color: var(--teal);
+}
+
+/* Formulaire */
+.auth-form {
+  padding: var(--space-xl);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.auth-form--hidden {
+  display: none;
+}
+
+.auth-form__title {
+  font-size: 1.2rem;
+  color: var(--navy);
+  margin-bottom: var(--space-sm);
+}
+
+/* Groupe label + input */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.form-group label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--navy);
+}
+
+.form-group input {
+  padding: var(--space-sm) var(--space-md);
+  border: 1.5px solid rgba(27, 42, 74, 0.20);
+  border-radius: var(--radius);
+  font-size: 0.95rem;
+  color: var(--text-main);
+  background-color: var(--bg-page);
+  transition: border-color var(--transition-fast);
+}
+
+.form-group input:focus {
   outline: none;
   border-color: var(--teal);
+  background-color: #fff;
 }
 
-/* — Overlay invitation (dans le lobby) */
-.invite-overlay .overlay__box {
-  border-top: 4px solid var(--purple);
+/* Zone d'erreur PHP */
+.form-error {
+  font-size: 0.875rem;
+  color: var(--coral);
+  min-height: 1.2em;  /* réserve l'espace même vide pour éviter le saut */
 }
 
 
-/* ── 6. BADGE VOTE (coloration divergente) ───────────────────
-   Affiché lors d'une contestation : vert = majorité, orange = minorité
-   ──────────────────────────────────────────────────────────── */
+/* ── 7. PAGE D'ACCUEIL ───────────────────────────────────────*/
+.hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: var(--space-lg);
+  padding: var(--space-xl) var(--space-lg);
+  min-height: calc(60vh - var(--nav-height));
+}
+
+.hero__title {
+  font-size: clamp(2rem, 6vw, 3.5rem);
+  color: var(--navy);
+}
+
+.hero__subtitle {
+  font-size: 1.1rem;
+  color: var(--text-light);
+  max-width: 480px;
+}
+
+.leaderboard-preview {
+  max-width: 720px;
+  margin: 0 auto var(--space-xl);
+  padding: 0 var(--space-lg);
+}
+
+
+/* ── 8. BADGES VOTE DIVERGENT ────────────────────────────────*/
 .vote-tag {
   display: inline-block;
   padding: 2px 10px;
@@ -413,28 +493,17 @@
   font-size: 0.8rem;
   font-weight: 700;
 }
-
-.vote-tag--majority {
-  background-color: rgba(26, 107, 58, 0.12);
-  color: var(--vote-majority);
-}
-
-.vote-tag--minority {
-  background-color: rgba(180, 83, 9, 0.12);
-  color: var(--vote-minority);
-}
+.vote-tag--majority { background-color: rgba(26,107,58,0.12);  color: var(--vote-majority); }
+.vote-tag--minority { background-color: rgba(180,83,9,0.12);   color: var(--vote-minority); }
 
 
-/* ── 7. COMPTEUR DE VOTES ────────────────────────────────────
-   "3 / 5 joueurs ont voté" affiché sous les boutons pays
-   ──────────────────────────────────────────────────────────── */
+/* ── 9. COMPTEUR DE VOTES ────────────────────────────────────*/
 .vote-counter {
   font-size: 0.85rem;
   color: var(--text-light);
   text-align: center;
   padding: var(--space-xs) 0;
 }
-
 .vote-counter__current {
   font-weight: 700;
   color: var(--navy);

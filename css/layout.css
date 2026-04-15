@@ -11,7 +11,7 @@
    On utilise Flexbox car c'est un alignement sur 1 seul axe
    (horizontal) : logo à gauche, liens à droite.
    ──────────────────────────────────────────────────────────── */
-.nav {
+.main-nav {
   display: flex;
   align-items: center;           /* centrage vertical        */
   justify-content: space-between;/* logo ← espace → liens   */
@@ -24,7 +24,7 @@
   z-index: 100;                  /* passe au-dessus du reste */
 }
 
-.nav__logo {
+.nav-logo {
   font-family: var(--font-display);
   font-size: 1.4rem;
   font-weight: bold;
@@ -33,26 +33,33 @@
 }
 
 /* Les liens de nav sont groupés dans un <ul> */
-.nav__links {
+.nav-links {
   display: flex;
   align-items: center;
   gap: var(--space-lg);          /* espace entre chaque lien */
 }
 
-.nav__link {
+/* Liens individuels dans la nav */
+.nav-links a {
   font-size: 0.9rem;
   color: var(--text-on-dark);
   opacity: 0.8;
   transition: opacity var(--transition-fast);
 }
 
-.nav__link:hover,
-.nav__link--active {
+.nav-links a:hover {
   opacity: 1;
 }
 
+/* Zone utilisateur (pseudo + bouton déconnexion) */
+.nav-user {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
 /* Pseudo du joueur connecté affiché dans la nav */
-.nav__pseudo {
+.nav-pseudo {
   font-size: 0.85rem;
   color: var(--text-on-dark);
   opacity: 0.65;
@@ -121,15 +128,72 @@
 
 
 /* ── 4. MISE EN PAGE DU LOBBY ────────────────────────────────
-   Deux colonnes : liste des équipes | chat / statuts
+   3 sections : créer | parties disponibles | mon équipe
    ──────────────────────────────────────────────────────────── */
 .lobby-layout {
   display: grid;
-  grid-template-columns: 1fr 320px;
+  grid-template-columns: 260px 1fr 300px;
   gap: var(--space-lg);
   padding: var(--space-xl) var(--space-lg);
-  max-width: 1100px;
+  max-width: 1200px;
   margin: 0 auto;
+  min-height: calc(100vh - var(--nav-height));
+}
+
+.lobby-create,
+.lobby-games,
+.lobby-team {
+  background-color: var(--bg-card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-card);
+  padding: var(--space-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.lobby-create h2,
+.lobby-games h2,
+.lobby-team h2 {
+  font-size: 1rem;
+  color: var(--navy);
+  padding-bottom: var(--space-sm);
+  border-bottom: 2px solid rgba(27, 42, 74, 0.08);
+}
+
+/* Zone d'invitation par pseudo */
+.invite-zone {
+  display: flex;
+  gap: var(--space-sm);
+}
+
+.invite-zone input {
+  flex: 1;
+  padding: var(--space-sm);
+  border: 1.5px solid rgba(27, 42, 74, 0.20);
+  border-radius: var(--radius);
+  font-size: 0.9rem;
+  color: var(--text-main);
+  transition: border-color var(--transition-fast);
+}
+
+.invite-zone input:focus {
+  outline: none;
+  border-color: var(--teal);
+}
+
+/* Liste des membres de l'équipe */
+.team-members {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  flex: 1;
+}
+
+/* Texte grisé "aucune partie" etc. */
+.text-muted {
+  color: var(--text-light);
+  font-size: 0.9rem;
 }
 
 
