@@ -1,0 +1,168 @@
+/* ============================================================
+   layout.css — Navigation Flexbox + Grille de game.php
+   HistoQuest · étape 1
+   ============================================================
+   Ce fichier gère la STRUCTURE des pages, pas leur apparence.
+   Règle d'or : layout.css positionne, components.css décore.
+   ============================================================ */
+
+/* ── 1. NAVIGATION ───────────────────────────────────────────
+   Barre fixe en haut, présente sur toutes les pages.
+   On utilise Flexbox car c'est un alignement sur 1 seul axe
+   (horizontal) : logo à gauche, liens à droite.
+   ──────────────────────────────────────────────────────────── */
+.nav {
+  display: flex;
+  align-items: center;           /* centrage vertical        */
+  justify-content: space-between;/* logo ← espace → liens   */
+  height: var(--nav-height);     /* 64px défini dans :root   */
+  padding: 0 var(--space-xl);    /* marges latérales         */
+  background-color: var(--navy);
+  color: var(--text-on-dark);
+  position: sticky;              /* reste visible au scroll  */
+  top: 0;
+  z-index: 100;                  /* passe au-dessus du reste */
+}
+
+.nav__logo {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: bold;
+  letter-spacing: 0.04em;
+  color: var(--text-on-dark);
+}
+
+/* Les liens de nav sont groupés dans un <ul> */
+.nav__links {
+  display: flex;
+  align-items: center;
+  gap: var(--space-lg);          /* espace entre chaque lien */
+}
+
+.nav__link {
+  font-size: 0.9rem;
+  color: var(--text-on-dark);
+  opacity: 0.8;
+  transition: opacity var(--transition-fast);
+}
+
+.nav__link:hover,
+.nav__link--active {
+  opacity: 1;
+}
+
+/* Pseudo du joueur connecté affiché dans la nav */
+.nav__pseudo {
+  font-size: 0.85rem;
+  color: var(--text-on-dark);
+  opacity: 0.65;
+}
+
+
+/* ── 2. CONTENEUR GÉNÉRAL DES PAGES ─────────────────────────
+   Toutes les pages sauf game.php ont un contenu centré.
+   ──────────────────────────────────────────────────────────── */
+.page-wrapper {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: var(--space-xl) var(--space-lg);
+}
+
+
+/* ── 3. GRILLE DE GAME.PHP ───────────────────────────────────
+   C'est la mise en page principale du jeu.
+   On utilise CSS Grid car on a 2 axes : 3 colonnes + des zones
+   qui doivent s'étirer verticalement sur toute la hauteur.
+
+   Colonne gauche  (300px) : événement + boutons + timer
+   Colonne centrale (1fr)  : carte du monde (SVG / Leaflet)
+   Colonne droite  (220px) : classement individuel en direct
+   ──────────────────────────────────────────────────────────── */
+.game-layout {
+  display: grid;
+  grid-template-columns: 300px 1fr 220px;
+
+  /* La grille prend toute la hauteur restante sous la nav */
+  height: calc(100vh - var(--nav-height));
+
+  /* Pas de gap entre colonnes : la carte doit toucher les bords */
+  gap: 0;
+}
+
+/* Colonne gauche */
+.game-panel--left {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  padding: var(--space-md);
+  background-color: var(--bg-page);
+  overflow-y: auto;              /* défile si le contenu déborde */
+  border-right: 1px solid rgba(27, 42, 74, 0.10);
+}
+
+/* Colonne centrale — la carte prend tout l'espace disponible */
+.game-panel--center {
+  position: relative;            /* ancre pour éléments absolus  */
+  background-color: #D6E4EC;    /* bleu-gris neutre pour la carte */
+  overflow: hidden;
+}
+
+/* Colonne droite — classement */
+.game-panel--right {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  padding: var(--space-md);
+  background-color: var(--navy);
+  color: var(--text-on-dark);
+  overflow-y: auto;
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+
+/* ── 4. MISE EN PAGE DU LOBBY ────────────────────────────────
+   Deux colonnes : liste des équipes | chat / statuts
+   ──────────────────────────────────────────────────────────── */
+.lobby-layout {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: var(--space-lg);
+  padding: var(--space-xl) var(--space-lg);
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+
+/* ── 5. MISE EN PAGE DES RÉSULTATS ───────────────────────────
+   Une colonne centrée pour le podium + tableau des scores
+   ──────────────────────────────────────────────────────────── */
+.results-layout {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-xl);
+  padding: var(--space-xl) var(--space-lg);
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+
+/* ── 6. UTILITAIRES DE FLEXBOX COURANTS ──────────────────────
+   Des classes utilitaires légères pour éviter la répétition.
+   ──────────────────────────────────────────────────────────── */
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.flex-col {
+  display: flex;
+  flex-direction: column;
+}

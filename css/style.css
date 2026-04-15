@@ -1,0 +1,129 @@
+/* ============================================================
+   style.css — Variables CSS globales + Reset
+   HistoQuest · étape 1
+   ============================================================ */
+
+/* ── 1. VARIABLES ───────────────────────────────────────────
+   Toutes les valeurs "magiques" du projet vivent ici.
+   Modifier une variable = modifier PARTOUT à la fois.
+   ──────────────────────────────────────────────────────────── */
+:root {
+  /* Couleurs principales */
+  --navy:   #1B2A4A;   /* titres, nav, fond sombre         */
+  --teal:   #0F6E56;   /* actions positives, bouton voter  */
+  --amber:  #BA7517;   /* timer, urgence, avertissement    */
+  --coral:  #993C1D;   /* erreurs, malus, danger           */
+  --purple: #3C3489;   /* accent secondaire, badges        */
+
+  /* Fonds et textes */
+  --bg-page:    #F1EFE8;  /* fond général, légèrement crème  */
+  --bg-card:    #FFFFFF;  /* fond des cartes / panneaux       */
+  --text-main:  #444441;  /* texte courant                    */
+  --text-light: #888884;  /* texte secondaire, placeholders  */
+  --text-on-dark: #F1EFE8; /* texte sur fond sombre (navy)   */
+
+  /* Couleurs dérivées pour les états de vote */
+  --vote-majority:  #1A6B3A;  /* vert  — vote majoritaire     */
+  --vote-minority:  #B45309;  /* orange — vote minoritaire    */
+
+  /* Typographie */
+  --font-display: 'Georgia', 'Times New Roman', serif;   /* titres */
+  --font-body:    'Arial', system-ui, sans-serif;        /* corps   */
+
+  /* Géométrie */
+  --radius:     8px;    /* arrondi standard des cartes      */
+  --radius-sm:  4px;    /* arrondi petit (badges, inputs)   */
+  --radius-lg:  16px;   /* arrondi large (overlays modaux)  */
+
+  /* Espacements — une échelle cohérente de 4px en 4px */
+  --space-xs:  4px;
+  --space-sm:  8px;
+  --space-md:  16px;
+  --space-lg:  24px;
+  --space-xl:  40px;
+
+  /* Ombres */
+  --shadow-card:  0 2px 8px rgba(27, 42, 74, 0.10);
+  --shadow-modal: 0 8px 32px rgba(27, 42, 74, 0.25);
+  --shadow-btn:   0 2px 4px rgba(0, 0, 0, 0.15);
+
+  /* Transitions */
+  --transition-fast:   150ms ease;
+  --transition-normal: 250ms ease;
+
+  /* Hauteur de la navigation (utile dans layout.css) */
+  --nav-height: 64px;
+
+  /* Timer */
+  --timer-color: var(--teal);   /* change en amber puis coral via JS */
+}
+
+
+/* ── 2. RESET ────────────────────────────────────────────────
+   Les navigateurs appliquent leurs propres marges/paddings
+   par défaut — le reset remet tout à zéro pour repartir
+   sur une base identique partout (Chrome, Firefox, Safari…)
+   ──────────────────────────────────────────────────────────── */
+
+/* Modèle de boîte : border-box inclut padding et border
+   dans la taille déclarée. Plus intuitif, moins de surprises. */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* Base du document */
+html {
+  font-size: 16px;      /* 1rem = 16px dans tout le projet  */
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-body);
+  font-size: 1rem;
+  color: var(--text-main);
+  background-color: var(--bg-page);
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+/* Titres : on utilise la police serif pour le côté historique */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  color: var(--navy);
+  line-height: 1.2;
+}
+
+/* Les listes sans classe n'ont pas besoin de puces dans une app */
+ul, ol {
+  list-style: none;
+}
+
+/* Les liens sans classe héritent de la couleur du texte */
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Images responsives par défaut */
+img, svg {
+  display: block;
+  max-width: 100%;
+}
+
+/* Inputs et boutons héritent de la police du projet */
+input, button, select, textarea {
+  font-family: inherit;
+  font-size: inherit;
+}
+
+/* Bouton : on retire le style navigateur, on repartira de zéro
+   dans components.css */
+button {
+  cursor: pointer;
+  border: none;
+  background: none;
+}
