@@ -197,36 +197,51 @@
 }
 
 
-/* ── 5. MISE EN PAGE DES RÉSULTATS ───────────────────────────
-   Une colonne centrée pour le podium + tableau des scores
-   ──────────────────────────────────────────────────────────── */
-.results-layout {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--space-xl);
-  padding: var(--space-xl) var(--space-lg);
-  max-width: 720px;
+/* ── RÉSULTATS ── */
+.results-page {
+  max-width: 1100px;
   margin: 0 auto;
-}
-
-
-/* ── 6. UTILITAIRES DE FLEXBOX COURANTS ──────────────────────
-   Des classes utilitaires légères pour éviter la répétition.
-   ──────────────────────────────────────────────────────────── */
-.flex-center {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.flex-between {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.flex-col {
+  padding: var(--space-xl) var(--space-lg);
   display: flex;
   flex-direction: column;
+  gap: var(--space-xl);
 }
+
+.results-content {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: var(--space-lg);
+  align-items: start;
+}
+
+
+/* ── LEADERBOARD ── */
+.lb-page {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: var(--space-lg);
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: var(--space-xl) var(--space-lg);
+  align-items: start;
+}
+
+.lb-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  position: sticky;
+  top: calc(var(--nav-height) + var(--space-md));
+}
+
+.lb-main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+
+/* ── UTILITAIRES ── */
+.flex-center  { display: flex; align-items: center; justify-content: center; }
+.flex-between { display: flex; align-items: center; justify-content: space-between; }
+.flex-col     { display: flex; flex-direction: column; }
