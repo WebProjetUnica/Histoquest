@@ -582,3 +582,75 @@
 .lb-page-btn--active { background-color: var(--navy); color: var(--text-on-dark); font-weight: 700; border-color: var(--navy); }
 .lb-page-btn:disabled { opacity: 0.35; cursor: not-allowed; }
 .lb-page-dots { color: var(--text-light); padding: 0 var(--space-xs); }
+
+
+/* ── LOBBY CARDS ── */
+.game-card {
+  background-color: var(--bg-card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-card);
+  padding: var(--space-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  border-left: 4px solid var(--navy);
+}
+
+.game-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.game-card__id   { font-weight: 700; font-size: 0.9rem; color: var(--navy); }
+.game-card__date { font-size: 0.78rem; color: var(--text-light); }
+
+.game-card__team {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: var(--space-sm);
+  background-color: var(--bg-page);
+  border-radius: var(--radius-sm);
+}
+
+.team-name         { font-weight: 600; font-size: 0.9rem; color: var(--navy); flex: 1; }
+.team-name-display { font-weight: 700; font-size: 1rem; color: var(--navy); }
+.team-count        { font-size: 0.8rem; color: var(--text-light); }
+
+.team-members-list {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.team-members-list li { font-size: 0.85rem; color: var(--text-main); padding: 2px 0; }
+
+.team-member {
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  color: var(--text-main);
+  background-color: var(--bg-page);
+}
+.team-member--me {
+  background-color: rgba(15, 110, 86, 0.08);
+  color: var(--teal);
+  font-weight: 600;
+}
+
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 99px;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+.badge--full { background-color: rgba(153, 60, 29, 0.10); color: var(--coral); }
+
+.invite-feedback {
+  font-size: 0.82rem;
+  color: var(--coral);
+  min-height: 1.2em;
+  margin-top: var(--space-xs);
+}
