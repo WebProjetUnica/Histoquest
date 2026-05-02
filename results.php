@@ -1,182 +1,170 @@
 <?php
+// results.php
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+// Rediriger si non connecté
+if (!isset($_SESSION['user_id'])) {
+    header('Location: auth.php');
+    exit;
+}
+
 require_once 'php/config.php';
+require_once 'php/game_functions.php';
+require_once 'php/score_functions.php';
+
+$user_id = $_SESSION['user_id'];
+$game_id = $_GET['game_id'] ?? $_SESSION['game_id'] ?? null;
+
+// Rediriger si pas de partie
+if (!$game_id) {
+    header('Location: lobby.php');
+    exit;
+}
+
+$game = get_game($game_id);
+if (!$game) {
+    header('Location: lobby.php');
+    exit;
+}
+
+// Compiler les scores finaux de la partie
+$final_scores = get_final_scores($game_id);
+$users        = read_json(USERS_FILE);
+
+// Construire le tableau des résultats avec pseudos et équipes
+$results = [];
+foreach ($users as $u) {
+    if (isset($final_scores[$u['id']])) {
+        $team_id  = get_player_team($game_id, $u['id']);
+        $team_name = $game['teams'][$team_id]['name'] ?? 'Inconnue';
+        $results[] = [
+            'user_id'   => $u['id'],
+            'pseudo'    => $u['pseudo'],
+            'score'     => $final_scores[$u['id']],
+            'team_id'   => $team_id,
+            'team_name' => $team_name,
+            'is_me'     => $u['id'] === $user_id,
+        ];
+    }
+}
+
+// Trier par score décroissant
+usort($results, fn($a, $b) => $b['score'] <=> $a['score']);
+
+// Trouver le meilleur contestataire
+$best_contestant = null;
+$best_contest_pts = -1;
+
+for ($t = 1; $t <= GAME_TOURS; $t++) {
+    $path = GAMES_DIR . $game_id . '/tour_' . $t . '_votes.json';
+    if (!file_exists($path)) continue;
+
+    $votes_data = read_json($path);
+    $contest    = $votes_data['contest'] ?? null;
+    if (!$contest) continue;
+
+    $contest_pts = $votes_data['points'][$contest['player_id']] ?? 0;
+    if ($contest_pts > $best_contest_pts) {
+        $best_contest_pts = $contest_pts;
+        $best_contestant  = $contest['pseudo'];
+    }
+}
+
+// Nettoyer la session de jeu
+unset($_SESSION['game_id']);
+unset($_SESSION['team_id']);
+
 $page_title = 'Résultats';
 require_once 'php/header.php';
 ?>
 
-<div class="results-page">
+<div class="results-container">
 
-  <div class="results-header">
-    <p class="results-header__label">Fin de partie</p>
-    <h1 class="results-header__title">Classement final</h1>
-    <p class="results-header__sub">7 tours · scores individuels</p>
-  </div>
+  <h1 class="results-title">Résultats de la partie</h1>
+  <p class="results-subtitle">
+    Partie du <?= date('d/m/Y', strtotime($game['created_at'])) ?>
+    — <?= GAME_TOURS ?> tours
+  </p>
 
+  <!-- Podium top 3 -->
+  <?php if (count($results) >= 3): ?>
   <div class="podium">
-    <div class="podium__place podium__place--silver">
-      <div class="podium__medal">🥈</div>
-      <p class="podium__pseudo">Napoléfan</p>
-      <p class="podium__score">21 pts</p>
+    <!-- 2ème place -->
+    <div class="podium__place podium__place--2">
+      <div class="podium__pseudo">
+        <?= htmlspecialchars($results[1]['pseudo']) ?>
+      </div>
+      <div class="podium__score"><?= $results[1]['score'] ?> pts</div>
+      <div class="podium__block">2</div>
     </div>
-    <div class="podium__place podium__place--gold">
-      <div class="podium__medal">🥇</div>
-      <p class="podium__pseudo">HistoKing</p>
-      <p class="podium__score">34 pts</p>
+    <!-- 1ère place -->
+    <div class="podium__place podium__place--1">
+      <div class="podium__crown">👑</div>
+      <div class="podium__pseudo">
+        <?= htmlspecialchars($results[0]['pseudo']) ?>
+      </div>
+      <div class="podium__score"><?= $results[0]['score'] ?> pts</div>
+      <div class="podium__block">1</div>
     </div>
-    <div class="podium__place podium__place--bronze">
-      <div class="podium__medal">🥉</div>
-      <p class="podium__pseudo">CléopatraFan</p>
-      <p class="podium__score">18 pts</p>
+    <!-- 3ème place -->
+    <div class="podium__place podium__place--3">
+      <div class="podium__pseudo">
+        <?= htmlspecialchars($results[2]['pseudo']) ?>
+      </div>
+      <div class="podium__score"><?= $results[2]['score'] ?> pts</div>
+      <div class="podium__block">3</div>
     </div>
   </div>
+  <?php endif; ?>
 
-  <div class="results-content">
-
-    <section class="results-rounds">
-      <div class="results-rounds__header">
-        <h2 class="results-section-title">Détail des tours</h2>
-        <span class="results-rounds__total">7 tours au total</span>
-      </div>
-      <table class="rounds-table">
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Événement historique</th>
-            <th>Bonne réponse</th>
-            <th>Tes points</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr class="rounds-table__row rounds-table__row--correct">
-            <td class="rounds-table__num">1</td>
-            <td class="rounds-table__event">Jules César franchit le Rubicon</td>
-            <td class="rounds-table__answer"><span class="answer-tag">🇮🇹 Italie</span></td>
-            <td class="rounds-table__points rounds-table__points--pos">+3</td>
-          </tr>
-          <tr class="rounds-table__row rounds-table__row--correct">
-            <td class="rounds-table__num">2</td>
-            <td class="rounds-table__event">Signature de la Magna Carta</td>
-            <td class="rounds-table__answer"><span class="answer-tag">🇬🇧 Royaume-Uni</span></td>
-            <td class="rounds-table__points rounds-table__points--pos">+1</td>
-          </tr>
-          <tr class="rounds-table__row rounds-table__row--wrong">
-            <td class="rounds-table__num">3</td>
-            <td class="rounds-table__event">Bataille de Waterloo</td>
-            <td class="rounds-table__answer"><span class="answer-tag">🇧🇪 Belgique</span></td>
-            <td class="rounds-table__points rounds-table__points--zero">0</td>
-          </tr>
-          <tr class="rounds-table__row rounds-table__row--correct">
-            <td class="rounds-table__num">4</td>
-            <td class="rounds-table__event">Chute du mur de Berlin</td>
-            <td class="rounds-table__answer"><span class="answer-tag">🇩🇪 Allemagne</span></td>
-            <td class="rounds-table__points rounds-table__points--pos">+3</td>
-          </tr>
-          <tr class="rounds-table__row rounds-table__row--correct">
-            <td class="rounds-table__num">5</td>
-            <td class="rounds-table__event">Restauration Meiji</td>
-            <td class="rounds-table__answer"><span class="answer-tag">🇯🇵 Japon</span></td>
-            <td class="rounds-table__points rounds-table__points--pos">+3</td>
-          </tr>
-          <tr class="rounds-table__row rounds-table__row--wrong">
-            <td class="rounds-table__num">6</td>
-            <td class="rounds-table__event">Déclaration d'indépendance américaine</td>
-            <td class="rounds-table__answer"><span class="answer-tag">🇺🇸 États-Unis</span></td>
-            <td class="rounds-table__points rounds-table__points--zero">0</td>
-          </tr>
-          <tr class="rounds-table__row rounds-table__row--correct">
-            <td class="rounds-table__num">7</td>
-            <td class="rounds-table__event">Alunissage Apollo 11</td>
-            <td class="rounds-table__answer"><span class="answer-tag">🇺🇸 États-Unis</span></td>
-            <td class="rounds-table__points rounds-table__points--pos">+3</td>
-          </tr>
-        </tbody>
-        <tfoot>
-          <tr class="rounds-table__total">
-            <td colspan="3">Total</td>
-            <td class="rounds-table__points rounds-table__points--pos">13 pts</td>
-          </tr>
-        </tfoot>
-      </table>
-    </section>
-
-    <aside class="results-aside">
-
-      <div class="results-stats">
-        <h2 class="results-section-title">Tes stats</h2>
-        <div class="stats-list">
-          <div class="stat-item">
-            <span class="stat-item__label">Bonnes réponses</span>
-            <span class="stat-item__value stat-item__value--pos">5 / 7</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-item__label">Avec indice</span>
-            <span class="stat-item__value">1 fois</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-item__label">Contestations gagnées</span>
-            <span class="stat-item__value stat-item__value--pos">1</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-item__label">Ton classement</span>
-            <span class="stat-item__value">4e / 5</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="top-contester">
-        <h2 class="results-section-title">⚡ Top contestataire</h2>
-        <p class="top-contester__sub">Contestation la plus réussie</p>
-        <div class="top-contester__card">
-          <div class="top-contester__avatar">HK</div>
-          <div class="top-contester__info">
-            <p class="top-contester__pseudo">HistoKing</p>
-            <p class="top-contester__detail">A retourné 2 votes en sa faveur</p>
-          </div>
-          <div class="top-contester__wins">
-            <span class="top-contester__wins-num">2</span>
-            <span class="top-contester__wins-label">gains</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="results-ranking">
-        <h2 class="results-section-title">Classement complet</h2>
-        <ul class="ranking-list">
-          <li class="ranking-item ranking-item--gold">
-            <span class="ranking-item__pos">1</span>
-            <span class="ranking-item__pseudo">HistoKing</span>
-            <span class="ranking-item__score">34 pts</span>
-          </li>
-          <li class="ranking-item ranking-item--silver">
-            <span class="ranking-item__pos">2</span>
-            <span class="ranking-item__pseudo">Napoléfan</span>
-            <span class="ranking-item__score">21 pts</span>
-          </li>
-          <li class="ranking-item ranking-item--bronze">
-            <span class="ranking-item__pos">3</span>
-            <span class="ranking-item__pseudo">CléopatraFan</span>
-            <span class="ranking-item__score">18 pts</span>
-          </li>
-          <li class="ranking-item ranking-item--me">
-            <span class="ranking-item__pos">4</span>
-            <span class="ranking-item__pseudo">Toi</span>
-            <span class="ranking-item__score">13 pts</span>
-          </li>
-          <li class="ranking-item">
-            <span class="ranking-item__pos">5</span>
-            <span class="ranking-item__pseudo">RomainDubled</span>
-            <span class="ranking-item__score">9 pts</span>
-          </li>
-        </ul>
-      </div>
-
-    </aside>
-
+  <!-- Meilleur contestataire -->
+  <?php if ($best_contestant): ?>
+  <div class="best-contestant">
+    <span class="best-contestant__label">🏆 Meilleur contestataire</span>
+    <span class="best-contestant__name">
+      <?= htmlspecialchars($best_contestant) ?>
+    </span>
   </div>
+  <?php endif; ?>
 
+  <!-- Classement complet -->
+  <table class="results-table">
+    <thead>
+      <tr>
+        <th>Rang</th>
+        <th>Joueur</th>
+        <th>Équipe</th>
+        <th>Score</th>
+      </tr>
+    </thead>
+    <tbody>
+      <?php foreach ($results as $i => $r): ?>
+        <tr class="
+          <?= $r['is_me']  ? 'results-table__row--me'  : '' ?>
+          <?= $i === 0     ? 'results-table__row--gold'   : '' ?>
+          <?= $i === 1     ? 'results-table__row--silver' : '' ?>
+          <?= $i === 2     ? 'results-table__row--bronze' : '' ?>
+        ">
+          <td class="results-table__rank"><?= $i + 1 ?></td>
+          <td class="results-table__pseudo">
+            <?= htmlspecialchars($r['pseudo']) ?>
+            <?= $r['is_me'] ? '<span class="badge-me">(toi)</span>' : '' ?>
+          </td>
+          <td class="results-table__team">
+            <?= htmlspecialchars($r['team_name']) ?>
+          </td>
+          <td class="results-table__score"><?= $r['score'] ?> pts</td>
+        </tr>
+      <?php endforeach; ?>
+    </tbody>
+  </table>
+
+  <!-- Actions -->
   <div class="results-actions">
-    <a href="lobby.php" class="btn btn-primary">← Retour au lobby</a>
-    <a href="leaderboard.php" class="btn btn-ghost">🏆 Classement général</a>
+    <a href="lobby.php"       class="btn btn-primary">Nouvelle partie</a>
+    <a href="leaderboard.php" class="btn btn-ghost">Voir le classement</a>
   </div>
 
 </div>
