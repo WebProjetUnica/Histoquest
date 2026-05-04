@@ -1,161 +1,116 @@
 <?php
+// leaderboard.php
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
 require_once 'php/config.php';
+
+$users = read_json(USERS_FILE);
+
+// Filtrer les joueurs qui ont joué au moins une partie
+$players = array_filter($users, fn($u) => $u['parties'] > 0 || $u['score_total'] > 0);
+
+// Trier par score total décroissant
+usort($players, fn($a, $b) => $b['score_total'] <=> $a['score_total']);
+
+// Limiter aux 20 premiers
+$top20 = array_slice($players, 0, 20);
+
+// Si aucun joueur n'a encore joué, afficher quand même tous les inscrits
+if (empty($top20)) {
+    usort($users, fn($a, $b) => $b['score_total'] <=> $a['score_total']);
+    $top20 = array_slice($users, 0, 20);
+}
+
+// Trouver le rang du joueur connecté
+$my_rank = null;
+if (isset($_SESSION['user_id'])) {
+    foreach ($players as $i => $u) {
+        if ($u['id'] === $_SESSION['user_id']) {
+            $my_rank = $i + 1;
+            break;
+        }
+    }
+}
+
 $page_title = 'Classement général';
 require_once 'php/header.php';
 ?>
 
-<div class="lb-page">
+<div class="leaderboard-container">
 
-  <aside class="lb-sidebar">
+  <h1 class="leaderboard-title">Classement général</h1>
+  <p class="leaderboard-subtitle">
+    Les meilleurs joueurs toutes parties confondues
+  </p>
 
-    <div class="lb-my-standing">
-      <p class="lb-my-standing__label">Ta position</p>
-      <p class="lb-my-standing__rank">#12</p>
-      <p class="lb-my-standing__sub">Top 25% des joueurs</p>
-      <a href="results.php" class="btn btn-primary btn-full">Voir mes stats</a>
-    </div>
+  <!-- Ton rang si connecté -->
+  <?php if ($my_rank && $my_rank > 20): ?>
+  <div class="my-rank-banner">
+    Ton rang : <strong>#<?= $my_rank ?></strong>
+    sur <?= count($players) ?> joueurs
+  </div>
+  <?php endif; ?>
 
-    <div class="lb-filters">
-      <p class="lb-filters__title">Période</p>
-      <div class="lb-period">
-        <button class="lb-period__btn lb-period__btn--active">Aujourd'hui</button>
-        <button class="lb-period__btn">Cette semaine</button>
-        <button class="lb-period__btn">Ce mois</button>
-        <button class="lb-period__btn">Tout temps</button>
-      </div>
-    </div>
+  <?php if (empty($top20)): ?>
+    <p class="text-muted">
+      Aucune partie jouée pour l'instant. Soyez les premiers !
+    </p>
+  <?php else: ?>
 
-  </aside>
-
-  <main class="lb-main">
-
-    <div class="lb-header">
-      <div>
-        <h1 class="lb-header__title">Classement général</h1>
-        <p class="lb-header__sub">Meilleurs joueurs HistoQuest — mis à jour en temps réel</p>
-      </div>
-    </div>
-
-    <div class="lb-podium">
-
-      <div class="lb-podium__place lb-podium__place--silver">
-        <div class="lb-podium__avatar">NF</div>
-        <p class="lb-podium__rank">2</p>
-        <p class="lb-podium__pseudo">Napoléfan</p>
-        <p class="lb-podium__score">4 210 pts</p>
-        <p class="lb-podium__acc">96.2% précision</p>
-      </div>
-
-      <div class="lb-podium__place lb-podium__place--gold">
-        <div class="lb-podium__crown">🏆</div>
-        <div class="lb-podium__avatar lb-podium__avatar--gold">HK</div>
-        <p class="lb-podium__rank">1</p>
-        <p class="lb-podium__pseudo">HistoKing</p>
-        <p class="lb-podium__score">5 870 pts</p>
-        <p class="lb-podium__acc">98.1% précision</p>
-      </div>
-
-      <div class="lb-podium__place lb-podium__place--bronze">
-        <div class="lb-podium__avatar">CF</div>
-        <p class="lb-podium__rank">3</p>
-        <p class="lb-podium__pseudo">CléopatraFan</p>
-        <p class="lb-podium__score">3 890 pts</p>
-        <p class="lb-podium__acc">94.7% précision</p>
-      </div>
-
-    </div>
-
-    <table class="lb-table">
-      <thead>
-        <tr>
-          <th>Rang</th>
-          <th>Joueur</th>
-          <th>Parties jouées</th>
-          <th>Score total</th>
-          <th>Précision</th>
-          <th>Contestations gagnées</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr class="lb-table__row">
-          <td class="lb-table__rank">#4</td>
-          <td class="lb-table__player">
-            <div class="lb-avatar-sm">RD</div>
-            <span>RomainDubled</span>
+  <table class="leaderboard-table">
+    <thead>
+      <tr>
+        <th>Rang</th>
+        <th>Joueur</th>
+        <th>Score total</th>
+        <th>Parties jouées</th>
+        <th>Contestations réussies</th>
+      </tr>
+    </thead>
+    <tbody>
+      <?php foreach ($top20 as $i => $u): ?>
+        <?php
+        $rank    = $i + 1;
+        $is_me   = isset($_SESSION['user_id']) && $u['id'] === $_SESSION['user_id'];
+        $rowClass = '';
+        if ($rank === 1) $rowClass = 'leaderboard-table__row--gold';
+        if ($rank === 2) $rowClass = 'leaderboard-table__row--silver';
+        if ($rank === 3) $rowClass = 'leaderboard-table__row--bronze';
+        if ($is_me)      $rowClass .= ' leaderboard-table__row--me';
+        ?>
+        <tr class="<?= $rowClass ?>">
+          <td class="leaderboard-table__rank">
+            <?php if ($rank === 1): ?>🥇
+            <?php elseif ($rank === 2): ?>🥈
+            <?php elseif ($rank === 3): ?>🥉
+            <?php else: ?>#<?= $rank ?>
+            <?php endif; ?>
           </td>
-          <td>18</td>
-          <td class="lb-table__score">3 410 pts</td>
-          <td>91.3%</td>
-          <td>3</td>
-        </tr>
-        <tr class="lb-table__row">
-          <td class="lb-table__rank">#5</td>
-          <td class="lb-table__player">
-            <div class="lb-avatar-sm">VH</div>
-            <span>VercingHistory</span>
+          <td class="leaderboard-table__pseudo">
+            <?= htmlspecialchars($u['pseudo']) ?>
+            <?= $is_me ? '<span class="badge-me">(toi)</span>' : '' ?>
           </td>
-          <td>15</td>
-          <td class="lb-table__score">3 100 pts</td>
-          <td>89.8%</td>
-          <td>1</td>
-        </tr>
-        <tr class="lb-table__row">
-          <td class="lb-table__rank">#6</td>
-          <td class="lb-table__player">
-            <div class="lb-avatar-sm">AM</div>
-            <span>AttilaMax</span>
+          <td class="leaderboard-table__score">
+            <?= $u['score_total'] ?> pts
           </td>
-          <td>21</td>
-          <td class="lb-table__score">2 980 pts</td>
-          <td>87.5%</td>
-          <td>5</td>
-        </tr>
-        <tr class="lb-table__row">
-          <td class="lb-table__rank">#7</td>
-          <td class="lb-table__player">
-            <div class="lb-avatar-sm">JC</div>
-            <span>JulesChronos</span>
+          <td class="leaderboard-table__parties">
+            <?= $u['parties'] ?>
           </td>
-          <td>12</td>
-          <td class="lb-table__score">2 750 pts</td>
-          <td>92.0%</td>
-          <td>2</td>
-        </tr>
-        <tr class="lb-table__row">
-          <td class="lb-table__rank">#8</td>
-          <td class="lb-table__player">
-            <div class="lb-avatar-sm">PH</div>
-            <span>PharaonHisto</span>
+          <td class="leaderboard-table__contests">
+            <?= $u['contests_won'] ?>
           </td>
-          <td>9</td>
-          <td class="lb-table__score">2 310 pts</td>
-          <td>85.1%</td>
-          <td>0</td>
         </tr>
-        <tr class="lb-table__row lb-table__row--me">
-          <td class="lb-table__rank">#12</td>
-          <td class="lb-table__player">
-            <div class="lb-avatar-sm lb-avatar-sm--me">TO</div>
-            <span>Toi</span>
-          </td>
-          <td>7</td>
-          <td class="lb-table__score">1 340 pts</td>
-          <td>78.6%</td>
-          <td>1</td>
-        </tr>
-      </tbody>
-    </table>
+      <?php endforeach; ?>
+    </tbody>
+  </table>
 
-    <div class="lb-pagination">
-      <button class="lb-page-btn" disabled>← Précédent</button>
-      <button class="lb-page-btn lb-page-btn--active">1</button>
-      <button class="lb-page-btn">2</button>
-      <button class="lb-page-btn">3</button>
-      <span class="lb-page-dots">…</span>
-      <button class="lb-page-btn">Suivant →</button>
-    </div>
+  <?php endif; ?>
 
-  </main>
+  <div class="leaderboard-actions">
+    <a href="lobby.php" class="btn btn-primary">Jouer maintenant</a>
+  </div>
 
 </div>
 

@@ -16,6 +16,19 @@ require_once 'php/game_functions.php';
 $user_id = $_SESSION['user_id'];
 $pseudo  = $_SESSION['pseudo'];
 
+// Si le joueur n'a pas de game_id en session
+// mais qu'il est déjà dans une partie en attente — le retrouver
+if (!isset($_SESSION['game_id'])) {
+    foreach (get_waiting_games() as $game) {
+        $team_id = get_player_team($game['id'], $user_id);
+        if ($team_id) {
+            $_SESSION['game_id'] = $game['id'];
+            $_SESSION['team_id'] = $team_id;
+            break;
+        }
+    }
+}
+
 // ── Traitement POST — créer une partie ────────────────────────────────────
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
@@ -110,7 +123,10 @@ require_once 'php/header.php';
               $is_full    = count($team['members']) >= GAME_TEAM_SIZE;
               $already_in = $current_game_id === $game['id'];
               ?>
-              <?php if (!$is_full && !$already_in): ?>
+              <?php
+                $is_my_team = ($current_game_id === $game['id'] && $current_team_id === $team_id);
+                if (!$is_full && !$already_in && !$is_my_team): 
+              ?>
                 <form method="POST" action="lobby.php">
                   <input type="hidden" name="action"  value="join">
                   <input type="hidden" name="game_id" value="<?= $game['id'] ?>">
