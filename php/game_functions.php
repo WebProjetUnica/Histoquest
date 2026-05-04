@@ -146,3 +146,25 @@ function get_player_team(string $game_id, string $user_id): string|null {
     }
     return null;
 }
+
+// ── Récupérer un événement historique aléatoire ───────────────────────────
+function get_random_event(): array {
+    $events_file = DATA_DIR . 'events.json';
+
+    // Si le fichier n'existe pas — événement par défaut
+    if (!file_exists($events_file)) {
+        return [
+            'titre'          => 'Événement historique',
+            'description'    => 'Description à venir.',
+            'annee'          => '????',
+            'pays_correct'   => 'France',
+            'pays_candidats' => ['France', 'Espagne', 'Italie', 'Allemagne'],
+            'indice'         => 'Indice non disponible.',
+        ];
+    }
+
+    $events = read_json($events_file);
+    if (empty($events)) return get_random_event();
+
+    return $events[array_rand($events)];
+}

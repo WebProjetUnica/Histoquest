@@ -1,0 +1,82 @@
+[
+  {
+    "titre": "Bataille de Lépante",
+    "description": "Une coalition de forces chrétiennes affronte la flotte ottomane dans le golfe de Patras. C'est l'une des dernières grandes batailles navales opposant des galères.",
+    "annee": "1571",
+    "pays_correct": "Grèce",
+    "pays_candidats": ["Grèce", "Espagne", "Turquie", "Italie"],
+    "indice": "Cet événement s'est déroulé en Méditerranée orientale, près des côtes européennes."
+  },
+  {
+    "titre": "Révolution de Velours",
+    "description": "Une transition pacifique du régime communiste vers la démocratie s'opère sans effusion de sang. Elle est menée notamment par Václav Havel.",
+    "annee": "1989",
+    "pays_correct": "Tchécoslovaquie",
+    "pays_candidats": ["Tchécoslovaquie", "Pologne", "Hongrie", "Roumanie"],
+    "indice": "Cet événement s'est déroulé en Europe centrale, dans un pays qui se divisera pacifiquement en deux en 1993."
+  },
+  {
+    "titre": "Traité de Westphalie",
+    "description": "Ce traité met fin à la guerre de Trente Ans et à la guerre de Quatre-Vingts Ans. Il pose les bases du système moderne des États-nations souverains.",
+    "annee": "1648",
+    "pays_correct": "Allemagne",
+    "pays_candidats": ["Allemagne", "France", "Autriche", "Pays-Bas"],
+    "indice": "Ce traité fut signé dans deux villes de la région de Westphalie, en Europe centrale."
+  },
+  {
+    "titre": "Indépendance de l'Inde",
+    "description": "Après des décennies de lutte non-violente menée par Gandhi et le Congrès national indien, le pays obtient son indépendance de l'Empire britannique.",
+    "annee": "1947",
+    "pays_correct": "Inde",
+    "pays_candidats": ["Inde", "Pakistan", "Bangladesh", "Ceylan"],
+    "indice": "Ce pays est le plus grand de l'Asie du Sud et borde l'océan Indien."
+  },
+  {
+    "titre": "Construction du mur de Berlin",
+    "description": "Un mur de béton est érigé en une nuit pour séparer Berlin-Est de Berlin-Ouest, divisant familles et amis. Il deviendra le symbole de la guerre froide.",
+    "annee": "1961",
+    "pays_correct": "Allemagne",
+    "pays_candidats": ["Allemagne", "Autriche", "Pologne", "Tchécoslovaquie"],
+    "indice": "Ce mur divisait une ville qui était aussi la capitale d'un pays réunifié en 1990."
+  },
+  {
+    "titre": "Bataille de Waterloo",
+    "description": "Napoléon Bonaparte subit sa défaite finale face aux forces de la coalition européenne commandées par Wellington et Blücher.",
+    "annee": "1815",
+    "pays_correct": "Belgique",
+    "pays_candidats": ["Belgique", "France", "Pays-Bas", "Prusse"],
+    "indice": "Cette bataille s'est déroulée près de Bruxelles, dans un pays créé en 1830."
+  },
+  {
+    "titre": "Révolution mexicaine",
+    "description": "Un soulèvement populaire renverse la dictature de Porfirio Díaz. La révolution dure dix ans et aboutit à une nouvelle constitution en 1917.",
+    "annee": "1910",
+    "pays_correct": "Mexique",
+    "pays_candidats": ["Mexique", "Cuba", "Argentine", "Colombie"],
+    "indice": "Ce pays partage sa frontière nord avec les États-Unis."
+  },
+  {
+    "titre": "Chute de Constantinople",
+    "description": "Les forces ottomanes du sultan Mehmed II prennent d'assaut la capitale de l'Empire byzantin après un siège de 53 jours, mettant fin à l'Empire romain d'Orient.",
+    "annee": "1453",
+    "pays_correct": "Turquie",
+    "pays_candidats": ["Turquie", "Grèce", "Bulgarie", "Serbie"],
+    "indice": "Cette ville est aujourd'hui connue sous le nom d'Istanbul."
+  },
+  {
+    "titre": "Apartheid — fin officielle",
+    "description": "Les premières élections multiraciales de l'histoire du pays se tiennent. Nelson Mandela est élu président, mettant fin à des décennies de ségrégation institutionnelle.",
+    "annee": "1994",
+    "pays_correct": "Afrique du Sud",
+    "pays_candidats": ["Afrique du Sud", "Zimbabwe", "Namibie", "Mozambique"],
+    "indice": "Ce pays est situé à la pointe sud du continent africain."
+  },
+  {
+    "titre": "Débarquement de Normandie",
+    "description": "La plus grande opération amphibie de l'histoire militaire est lancée par les Alliés pour libérer l'Europe occidentale de l'occupation nazie.",
+    "annee": "1944",
+    "pays_correct": "France",
+    "pays_candidats": ["France", "Belgique", "Pays-Bas", "Norvège"],
+    "indice": "Cette opération s'est déroulée sur les côtes d'un pays d'Europe de l'Ouest, sur les plages d'une région historique."
+  }
+]

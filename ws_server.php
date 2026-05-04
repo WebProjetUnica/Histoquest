@@ -60,6 +60,22 @@ class HistoQuestServer implements MessageComponentInterface {
                     'message' => 'Connexion établie',
                 ]));
                 break;
+            // ── Identification depuis le lobby ────────────────────────────────────
+            case 'lobby_join':
+                $this->meta[$from->resourceId] = [
+                    'user_id' => $data['user_id'] ?? '',
+                    'game_id' => $data['game_id'] ?? '',
+                    'team_id' => $data['team_id'] ?? '',
+                    'pseudo'  => $data['pseudo']  ?? '',
+                    'context' => 'lobby',
+                ];
+                echo "[LOBBY] {$data['pseudo']} connecté au lobby\n";
+
+                $from->send(json_encode([
+                    'type'    => 'lobby_joined',
+                    'message' => 'Connecté au lobby',
+                ]));
+                break;
 
             // ── Vote soumis — broadcaster le compteur à l'équipe ──────────
             case 'vote_update':
