@@ -32,17 +32,51 @@ $team_id  = $_SESSION['team_id'];
 $user_id  = $_SESSION['user_id'];
 $pseudo   = $_SESSION['pseudo'];
 
+// Charger l'événement du tour en cours
+$tour       = $game['tour'] ?? 1;
+$votes_file = GAMES_DIR . $game_id . '/tour_' . $tour . '_votes.json';
+$votes_data = read_json($votes_file);
+
+// Si pas encore d'événement pour ce tour — en générer un
+if (empty($votes_data['event'])) {
+    $event = get_random_event();
+    $votes_data = [
+        'tour'           => $tour,
+        'game_id'        => $game_id,
+        'team_id'        => $team_id,
+        'votes'          => [],
+        'hint_used'      => false,
+        'hint_vote_open' => false,
+        'hint_votes'     => ['oui' => 0, 'non' => 0],
+        'hint_voters'    => [],
+        'contest'        => null,
+        'majority'       => null,
+        'correct'        => $event['pays_correct'],
+        'indice'         => $event['indice'],
+        'points'         => [],
+        'event'          => $event,
+    ];
+    write_json($votes_file, $votes_data);
+} else {
+    $event = $votes_data['event'];
+}
+
+$pays_candidats = $event['pays_candidats'];
+shuffle($pays_candidats);
+
 $page_title = 'Partie en cours';
 require_once 'php/header.php';
 ?>
 
 <!-- Variables PHP accessibles en JavaScript -->
 <script>
-  const GAME_ID  = '<?= htmlspecialchars($game_id) ?>';
-  const TEAM_ID  = '<?= htmlspecialchars($team_id) ?>';
-  const USER_ID  = '<?= htmlspecialchars($user_id) ?>';
-  const PSEUDO   = '<?= htmlspecialchars($pseudo)  ?>';
-  const WS_URL   = 'ws://localhost:8080';
+  const GAME_ID   = '<?= htmlspecialchars($game_id) ?>';
+  const TEAM_ID   = '<?= htmlspecialchars($team_id) ?>';
+  const USER_ID   = '<?= htmlspecialchars($user_id) ?>';
+  const PSEUDO    = '<?= htmlspecialchars($pseudo)  ?>';
+  const TOUR      = <?= (int)$tour ?>;
+  const WS_URL    = 'ws://localhost:8080';
+  const PAYS_LIST = <?= json_encode($pays_candidats) ?>;
 </script>
 
 <div class="game-layout">
@@ -52,12 +86,14 @@ require_once 'php/header.php';
 
     <!-- Carte événement -->
     <div class="event-card" id="event-card">
-      <div class="event-card__year" id="event-year">Année</div>
+      <div class="event-card__year" id="event-year">
+        <?= htmlspecialchars($event['annee']) ?>
+      </div>
       <h2 class="event-card__title" id="event-title">
-        Titre de l'événement
+        <?= htmlspecialchars($event['titre']) ?>
       </h2>
       <p class="event-card__desc" id="event-desc">
-        Description de l'événement historique...
+        <?= htmlspecialchars($event['description']) ?>
       </p>
     </div>
 
@@ -78,11 +114,12 @@ require_once 'php/header.php';
 
     <!-- Boutons de vote -->
     <div class="vote-buttons" id="vote-buttons">
-      <!-- Générés dynamiquement par JS à chaque tour -->
-      <button class="btn vote-btn" data-pays="Pays 1">Pays 1</button>
-      <button class="btn vote-btn" data-pays="Pays 2">Pays 2</button>
-      <button class="btn vote-btn" data-pays="Pays 3">Pays 3</button>
-      <button class="btn vote-btn" data-pays="Pays 4">Pays 4</button>
+      <?php foreach ($pays_candidats as $pays): ?>
+        <button class="btn vote-btn"
+                data-pays="<?= htmlspecialchars($pays) ?>">
+          <?= htmlspecialchars($pays) ?>
+        </button>
+      <?php endforeach; ?>
     </div>
 
     <!-- Compteur de votes -->
@@ -100,7 +137,6 @@ require_once 'php/header.php';
 
   <!-- CARTE DU MONDE -->
   <div class="game-map" id="game-map">
-    <!-- Carte SVG ou Leaflet — intégrée par ton binôme -->
     <p style="padding:2rem;color:#888">Carte du monde ici</p>
   </div>
 
@@ -108,12 +144,10 @@ require_once 'php/header.php';
   <aside class="game-panel-right">
     <h3 class="panel-title">Scores</h3>
     <div class="scores-list" id="scores-list">
-      <!-- Mis à jour par AJAX -->
     </div>
 
     <h3 class="panel-title">Mon équipe</h3>
     <ul class="team-list" id="team-list">
-      <!-- Mis à jour par WebSocket -->
     </ul>
   </aside>
 
@@ -144,12 +178,10 @@ require_once 'php/header.php';
     <p class="modal__title" id="contest-title">
       Argument de contestation
     </p>
-    <!-- Zone de saisie — visible uniquement pour le contestataire -->
     <textarea class="contest-input hidden" id="contest-input"
               maxlength="150"
               placeholder="Explique pourquoi tu contestes...">
     </textarea>
-    <!-- Message — visible pour les autres -->
     <p class="contest-text hidden" id="contest-text"></p>
     <div class="contest-votes" id="contest-divergent"></div>
     <button class="btn btn-primary hidden" id="contest-submit">
@@ -164,7 +196,6 @@ require_once 'php/header.php';
     <p class="modal__title">Second vote — 20 secondes</p>
     <p id="contest-argument"></p>
     <div class="vote-buttons" id="revote-buttons">
-      <!-- Mêmes boutons que le vote initial, générés par JS -->
     </div>
     <div class="timer-bar">
       <div class="timer-bar__fill" id="revote-timer-fill"

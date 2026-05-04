@@ -53,6 +53,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         header('Location: lobby.php');
         exit;
     }
+    if ($action === 'start') {
+    $game_id = $_SESSION['game_id'] ?? '';
+    if ($game_id && can_start_game($game_id)) {
+        $result = start_game($game_id);
+        if ($result['ok']) {
+            header('Location: game.php');
+            exit;
+        }
+    }
+    header('Location: lobby.php');
+    exit;
+}
 }
 
 // ── Données pour l'affichage ───────────────────────────────────────────────
@@ -208,6 +220,15 @@ require_once 'php/header.php';
     </div>
   </div>
 </div>
+
+<!-- Variables PHP pour JavaScript -->
+<script>
+  const WS_URL  = 'ws://localhost:8080';
+  const USER_ID = '<?= htmlspecialchars($user_id) ?>';
+  const PSEUDO  = '<?= htmlspecialchars($pseudo) ?>';
+  const GAME_ID = '<?= htmlspecialchars($_SESSION['game_id'] ?? '') ?>';
+  const TEAM_ID = '<?= htmlspecialchars($_SESSION['team_id'] ?? '') ?>';
+</script>
 
 <script src="js/lobby.js"></script>
 <?php require_once 'php/footer.php'; ?>
