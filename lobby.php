@@ -16,6 +16,19 @@ require_once 'php/game_functions.php';
 $user_id = $_SESSION['user_id'];
 $pseudo  = $_SESSION['pseudo'];
 
+// Si le joueur n'a pas de game_id en session
+// mais qu'il est déjà dans une partie en attente — le retrouver
+if (!isset($_SESSION['game_id'])) {
+    foreach (get_waiting_games() as $game) {
+        $team_id = get_player_team($game['id'], $user_id);
+        if ($team_id) {
+            $_SESSION['game_id'] = $game['id'];
+            $_SESSION['team_id'] = $team_id;
+            break;
+        }
+    }
+}
+
 // ── Traitement POST — créer une partie ────────────────────────────────────
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';

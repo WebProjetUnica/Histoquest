@@ -1,14 +1,39 @@
 <?php
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+// Rediriger si non connecté
+if (!isset($_SESSION['user_id'])) {
+    header('Location: auth.php');
+    exit;
+}
+
+// Rediriger si pas dans une partie
+if (!isset($_SESSION['game_id'])) {
+    header('Location: lobby.php');
+    exit;
+}
+
 require_once 'php/config.php';
+require_once 'php/game_functions.php';
+
+// Vérifier que la partie existe encore
+$game = get_game($_SESSION['game_id']);
+if (!$game) {
+    unset($_SESSION['game_id']);
+    unset($_SESSION['team_id']);
+    header('Location: lobby.php');
+    exit;
+}
+
+$game_id  = $_SESSION['game_id'];
+$team_id  = $_SESSION['team_id'];
+$user_id  = $_SESSION['user_id'];
+$pseudo   = $_SESSION['pseudo'];
+
 $page_title = 'Partie en cours';
 require_once 'php/header.php';
-
-// Variables PHP injectées dans le HTML pour JavaScript
-// Remplies en étape 2 avec les vraies données de session
-$game_id  = $_SESSION['game_id']  ?? 'test';
-$team_id  = $_SESSION['team_id']  ?? 'equipe_1';
-$user_id  = $_SESSION['user_id']  ?? '';
-$pseudo   = $_SESSION['pseudo']   ?? '';
 ?>
 
 <!-- Variables PHP accessibles en JavaScript -->
