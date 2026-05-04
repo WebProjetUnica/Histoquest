@@ -654,3 +654,9 @@
   min-height: 1.2em;
   margin-top: var(--space-xs);
 }
+
+.vote--majority { border-color: var(--vote-majority) !important; background-color: rgba(26, 107, 58, 0.12) !important; color: var(--vote-majority) !important; }
+.vote--divergent { border-color: var(--vote-minority) !important; background-color: rgba(180, 83, 9, 0.12) !important; color: var(--vote-minority) !important; }
+
+.contest-notif { display: none; padding: var(--space-sm); color: var(--amber); font-size: 0.9rem; border-left: 3px solid var(--amber); }
+.contest-notif.active { display: block; }

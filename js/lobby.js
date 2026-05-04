@@ -100,7 +100,10 @@ function onInvitationReceived(data) {
   pendingInvite = data;
   if (inviteFrom) inviteFrom.textContent = data.from_pseudo;
   if (inviteTeam) inviteTeam.textContent = data.team_name ?? 'une équipe';
-  if (overlayInvite) overlayInvite.classList.add('overlay--open');
+  if (overlayInvite) {
+    overlayInvite.classList.add('overlay--open');
+    setTimeout(() => overlayInvite.classList.remove('overlay--open'), 30000);
+  }
 }
 
 async function acceptInvite() {

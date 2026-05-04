@@ -259,7 +259,7 @@ function openOverlay(el)  { if (el) el.classList.add('overlay--open'); }
 function closeOverlay(el) { if (el) el.classList.remove('overlay--open'); }
 
 function onVoteUpdate(data) {
-  if (voteCount) voteCount.textContent = data.count + '/5 joueurs ont voté';
+  if (voteCount) voteCount.textContent = `${data.voted}/${data.total} joueurs ont voté`;
 }
 
 function onHintAvailable(data)  { showHintOverlay(data.pseudo); }
