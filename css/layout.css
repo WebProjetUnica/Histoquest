@@ -245,3 +245,14 @@
 .flex-center  { display: flex; align-items: center; justify-content: center; }
 .flex-between { display: flex; align-items: center; justify-content: space-between; }
 .flex-col     { display: flex; flex-direction: column; }
+
+
+/* ── LEADERBOARD (nouvelle version binôme) ── */
+.leaderboard-container {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: var(--space-xl) var(--space-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
