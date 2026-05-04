@@ -110,7 +110,10 @@ require_once 'php/header.php';
               $is_full    = count($team['members']) >= GAME_TEAM_SIZE;
               $already_in = $current_game_id === $game['id'];
               ?>
-              <?php if (!$is_full && !$already_in): ?>
+              <?php
+                $is_my_team = ($current_game_id === $game['id'] && $current_team_id === $team_id);
+                if (!$is_full && !$already_in && !$is_my_team): 
+              ?>
                 <form method="POST" action="lobby.php">
                   <input type="hidden" name="action"  value="join">
                   <input type="hidden" name="game_id" value="<?= $game['id'] ?>">
