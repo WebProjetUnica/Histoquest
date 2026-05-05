@@ -168,3 +168,29 @@ function get_random_event(): array {
 
     return $events[array_rand($events)];
 }
+
+// ── Passer au tour suivant ─────────────────────────────────────────────────
+function next_turn(string $game_id): array {
+    $game_dir = GAMES_DIR . $game_id . '/';
+    $game     = read_json($game_dir . 'game.json');
+
+    if (!$game) {
+        return ['ok' => false, 'error' => 'Partie introuvable'];
+    }
+
+    $tour_actuel = $game['tour'] ?? 1;
+    $tour_suivant = $tour_actuel + 1;
+
+    // Vérifier si la partie est terminée
+    if ($tour_suivant > GAME_TOURS) {
+        $game['status'] = 'finished';
+        write_json($game_dir . 'game.json', $game);
+        return ['ok' => true, 'finished' => true, 'tour' => $tour_actuel];
+    }
+
+    // Incrémenter le tour
+    $game['tour'] = $tour_suivant;
+    write_json($game_dir . 'game.json', $game);
+
+    return ['ok' => true, 'finished' => false, 'tour' => $tour_suivant];
+}

@@ -193,6 +193,28 @@ class HistoQuestServer implements MessageComponentInterface {
                 );
                 echo "[GAME] Partie {$data['game_id']} démarrée — broadcast à tous les joueurs\n";
                 break;
+            case 'new_turn':
+                $this->broadcastToGame(
+                    $data['game_id'],
+                    [
+                        'type'    => 'new_turn',
+                        'game_id' => $data['game_id'],
+                        'tour'    => $data['tour'],
+                    ]
+                );
+                echo "[TOUR] Nouveau tour {$data['tour']} — game:{$data['game_id']}\n";
+                break;
+
+            case 'game_over':
+                $this->broadcastToGame(
+                    $data['game_id'],
+                    [
+                        'type'    => 'game_over',
+                        'game_id' => $data['game_id'],
+                    ]
+                );
+                echo "[FIN] Partie {$data['game_id']} terminée\n";
+                break;
 
             default:
                 echo "[?] Type inconnu : {$data['type']}\n";
