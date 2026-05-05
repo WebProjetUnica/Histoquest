@@ -65,8 +65,31 @@ document.addEventListener('DOMContentLoaded', () => {
   initContestSubmit();
   initHintVote();
   fetchScores();
-  mainTimer.start();
+
+  // Vérifier si le joueur a déjà voté ce tour avant de démarrer le timer
+  checkIfAlreadyVoted();
 });
+
+async function checkIfAlreadyVoted() {
+  try {
+    const response = await fetch(`ajax/get_scores.php?game_id=${GAME_ID}`);
+    const data = await response.json();
+    if (data.status === 'finished') {
+      window.location.href = `results.php?game_id=${GAME_ID}`;
+      return;
+    }
+    // Si le tour courant a déjà une majorité calculée — tour terminé
+    if (data.majority) {
+      gameState.hasVoted = true;
+      lockVoteButtons();
+      if (contestBtn) contestBtn.classList.remove('hidden');
+    } else {
+      mainTimer.start();
+    }
+  } catch (err) {
+    mainTimer.start();
+  }
+}
 
 function initVoteButtons() {
   voteButtons.forEach(btn => {
@@ -264,14 +287,14 @@ function initContestButton() {
 
 function openContestOverlay(isContestant) {
   if (isContestant) {
-    contestInput.classList.remove('hidden');
-    contestSubmit.classList.remove('hidden');
-    contestTextEl.classList.add('hidden');
+    contestInput?.classList.remove('hidden');
+    contestSubmit?.classList.remove('hidden');
+    contestTextEl?.classList.add('hidden');
     if (contestTitle) contestTitle.textContent = 'Rédige ton argument (30s)';
   } else {
-    contestInput.classList.add('hidden');
-    contestSubmit.classList.add('hidden');
-    contestTextEl.classList.remove('hidden');
+    contestInput?.classList.add('hidden');
+    contestSubmit?.classList.add('hidden');
+    contestTextEl?.classList.remove('hidden');
   }
   openOverlay(overlayContest);
 }
@@ -416,14 +439,23 @@ async function onAllVoted() {
         tour:    gameState.currentTour,
       })
     });
+
+    if (!response.ok) {
+      console.warn('compute_tour.php indisponible (' + response.status + ')');
+      if (contestBtn) contestBtn.classList.remove('hidden');
+      fetchScores();
+      return;
+    }
+
     const data = await response.json();
     if (data.ok) {
       if (contestBtn) contestBtn.classList.remove('hidden');
+      showTourResult(data.majority, data.correct);
       fetchScores();
       wsSend({
         type:     'vote_update',
-        voted:    5,
-        total:    5,
+        voted:    data.total ?? 5,
+        total:    data.total ?? 5,
         majority: data.majority,
         correct:  data.correct,
         game_id:  GAME_ID,
@@ -442,8 +474,7 @@ function onMainTimerEnd() {
     gameState.hasVoted = true;
     lockVoteButtons();
   }
-  if (contestBtn) contestBtn.classList.remove('hidden');
-  fetchScores();
+  onAllVoted();
 }
 function onHintTimerEnd()   { closeOverlay(overlayHint); }
 function onRevoteTimerEnd() { closeOverlay(overlayRevote); }
@@ -453,6 +484,11 @@ function closeOverlay(el) { if (el) el.classList.remove('overlay--open'); }
 
 function onVoteUpdate(data) {
   if (voteCount) voteCount.textContent = `${data.voted}/${data.total} joueurs ont voté`;
+  if (data.voted >= data.total && !gameState.hasVoted) {
+    gameState.hasVoted = true;
+    lockVoteButtons();
+    onAllVoted();
+  }
 }
 
 function onHintAvailable(data) {
@@ -487,14 +523,16 @@ function onRevoteStarted(data) {
 function onRevoteResult(data) {
   closeOverlay(overlayRevote);
   revoteTimer.stop();
-  if (data.points_gagnes > 0) showScoreBadge(data.points_gagnes);
+  const myPoints = data.scores?.[USER_ID] ?? data.points_gagnes ?? 0;
+  if (myPoints > 0) showScoreBadge(myPoints);
   fetchScores();
 }
 
 function onTeamUpdate(data) {
   const teamList = document.getElementById('team-list');
-  if (!teamList || !data.membres) return;
-  teamList.innerHTML = data.membres.map(m => `
+  const membres = data.members ?? data.membres;
+  if (!teamList || !membres) return;
+  teamList.innerHTML = membres.map(m => `
     <li style="color:var(--text-on-dark);font-size:0.9rem;padding:var(--space-xs) 0;">
       ${escapeHtml(m.pseudo)}
     </li>
@@ -518,12 +556,34 @@ function onNewTurn(data) {
 
   if (hintZone) hintZone.classList.add('hidden');
 
+  // Nettoyer le résultat du tour précédent
+  document.querySelectorAll('.tour-result').forEach(el => el.remove());
+
   const voteBtns = document.querySelectorAll('#vote-buttons .vote-btn');
   voteBtns.forEach(btn => { btn.classList.remove('selected'); btn.disabled = false; });
 
   if (contestBtn) contestBtn.classList.add('hidden');
   if (hintBtn) hintBtn.disabled = false;
   mainTimer.start();
+}
+
+function showTourResult(majority, correct) {
+  const descEl = document.getElementById('event-desc');
+  if (!descEl) return;
+  const isCorrect = majority === correct;
+  const msg = isCorrect
+    ? `✅ Bonne réponse : ${correct}`
+    : `❌ Mauvaise réponse. La bonne réponse était : ${correct}`;
+  const resultEl = document.createElement('p');
+  resultEl.className = 'tour-result';
+  resultEl.style.cssText = `
+    margin-top: var(--space-sm);
+    font-weight: 700;
+    color: ${isCorrect ? 'var(--teal)' : 'var(--coral)'};
+    font-size: 0.95rem;
+  `;
+  resultEl.textContent = msg;
+  descEl.insertAdjacentElement('afterend', resultEl);
 }
 
 function escapeHtml(str) {

@@ -13,7 +13,6 @@ const inviteRefuse  = document.getElementById('invite-refuse');
 
 document.addEventListener('DOMContentLoaded', () => {
   interceptJoinForms();
-  interceptStartForm();
   lobbyWsConnect();
   startPolling();
 
@@ -97,11 +96,15 @@ async function sendInvite() {
     const response = await fetch('ajax/invite_player.php', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ pseudo, game_id: GAME_ID, team_id: TEAM_ID })
+      body: JSON.stringify({
+        target_pseudo: pseudo,
+        game_id:       GAME_ID,
+        team_id:       TEAM_ID,
+      })
     });
     const data = await response.json();
     if (!data.ok) {
-      if (feedback) feedback.textContent = data.error ?? 'Joueur introuvable.';
+      if (feedback) feedback.textContent = data.error ?? 'Erreur.';
     } else {
       if (feedback) feedback.textContent = `Invitation envoyée à ${pseudo}`;
       if (inviteInput) inviteInput.value = '';
