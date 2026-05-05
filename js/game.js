@@ -184,15 +184,30 @@ async function sendHintVote(choix) {
       })
     });
     const data = await response.json();
-    if (data.ok && data.result === 'accepted') {
+    if (!data.ok) return;
+
+    if (hintVoteCount) {
+      hintVoteCount.textContent = `OUI : ${data.oui} — NON : ${data.non}`;
+    }
+
+    if (data.result === 'accepted') {
+      // Récupérer l'indice depuis get_scores qui retourne aussi le statut du tour
+      const scoreRes = await fetch(`ajax/get_scores.php?game_id=${GAME_ID}`);
+      const scoreData = await scoreRes.json();
+      const indice = scoreData.indice ?? '';
+
       wsSend({
         type:    'hint_available',
+        text:    indice,
         game_id: GAME_ID,
         team_id: TEAM_ID,
       });
-    }
-    if (hintVoteCount) {
-      hintVoteCount.textContent = `OUI : ${data.oui} — NON : ${data.non}`;
+
+      // Afficher l'indice localement aussi
+      if (indice && hintZone && hintText) {
+        hintText.textContent = indice;
+        hintZone.classList.remove('hidden');
+      }
     }
   } catch (err) {
     console.error('Erreur vote hint :', err);
@@ -389,10 +404,37 @@ function showScoreBadge(points) {
   setTimeout(() => badge.classList.remove('visible'), 2000);
 }
 
-function onAllVoted() {
+async function onAllVoted() {
   mainTimer.stop();
-  if (contestBtn) contestBtn.classList.remove('hidden');
-  fetchScores();
+  try {
+    const response = await fetch('ajax/compute_tour.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        game_id: GAME_ID,
+        team_id: TEAM_ID,
+        tour:    gameState.currentTour,
+      })
+    });
+    const data = await response.json();
+    if (data.ok) {
+      if (contestBtn) contestBtn.classList.remove('hidden');
+      fetchScores();
+      wsSend({
+        type:     'vote_update',
+        voted:    5,
+        total:    5,
+        majority: data.majority,
+        correct:  data.correct,
+        game_id:  GAME_ID,
+        team_id:  TEAM_ID,
+      });
+    }
+  } catch (err) {
+    console.error('Erreur compute_tour :', err);
+    if (contestBtn) contestBtn.classList.remove('hidden');
+    fetchScores();
+  }
 }
 
 function onMainTimerEnd() {
