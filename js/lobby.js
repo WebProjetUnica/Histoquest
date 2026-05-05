@@ -1,82 +1,75 @@
 let lobbyWs = null;
 let lobbyReconnectDelay = 1000;
+let pollInterval = null;
 
-const inviteInput    = document.getElementById('invite-input');
-const inviteBtn      = document.getElementById('invite-btn');
-const startBtn       = document.getElementById('start-btn');
-const gamesList      = document.getElementById('games-list');
-const teamMembers    = document.getElementById('team-members');
-const overlayInvite  = document.getElementById('overlay-invitation');
-const inviteFrom     = document.getElementById('invite-from');
-const inviteTeam     = document.getElementById('invite-team');
-const inviteAccept   = document.getElementById('invite-accept');
-const inviteRefuse   = document.getElementById('invite-refuse');
+const inviteInput   = document.getElementById('invite-input');
+const inviteBtn     = document.getElementById('invite-btn');
+const teamMembers   = document.getElementById('team-members');
+const overlayInvite = document.getElementById('overlay-invitation');
+const inviteFrom    = document.getElementById('invite-from');
+const inviteTeam    = document.getElementById('invite-team');
+const inviteAccept  = document.getElementById('invite-accept');
+const inviteRefuse  = document.getElementById('invite-refuse');
 
 document.addEventListener('DOMContentLoaded', () => {
-  fetchGames();
-  setInterval(fetchGames, 5000);
+  interceptJoinForms();
+  interceptStartForm();
   lobbyWsConnect();
-  if (inviteBtn)   inviteBtn.addEventListener('click', sendInvite);
+  startPolling();
+
+  if (inviteBtn)    inviteBtn.addEventListener('click', sendInvite);
   if (inviteAccept) inviteAccept.addEventListener('click', acceptInvite);
   if (inviteRefuse) inviteRefuse.addEventListener('click', refuseInvite);
-  if (startBtn)    startBtn.addEventListener('click', startGame);
 });
 
-async function fetchGames() {
-  try {
-    const response = await fetch('ajax/get_games.php');
-    const data = await response.json();
-    renderGames(data.games);
-  } catch (err) {
-    console.error('Erreur fetchGames :', err);
-  }
+
+// ── Intercepter les formulaires "Rejoindre" ────────────────────────────────
+// lobby.php utilise des formulaires POST — on les intercepte pour utiliser
+// ajax/join_game.php en fetch et éviter un rechargement de page
+function interceptJoinForms() {
+  document.querySelectorAll('form').forEach(form => {
+    const actionInput = form.querySelector('input[name="action"]');
+    if (actionInput?.value === 'join') {
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const game_id = form.querySelector('input[name="game_id"]')?.value;
+        const team_id = form.querySelector('input[name="team_id"]')?.value;
+        if (game_id && team_id) await joinGame(game_id, team_id);
+      });
+    }
+  });
 }
 
-function renderGames(games) {
-  if (!gamesList) return;
-  if (!games || games.length === 0) {
-    gamesList.innerHTML = '<p class="text-muted">Aucune partie en attente.</p>';
-    return;
-  }
-  gamesList.innerHTML = games.map(g => `
-    <div class="game-item">
-      <span class="game-item__info">${escapeHtml(g.host)} — ${g.players}/5 joueurs</span>
-      <button class="btn btn-primary" onclick="joinGame('${g.id}')">Rejoindre</button>
-    </div>
-  `).join('');
+// ── Intercepter le formulaire "Démarrer" ──────────────────────────────────
+// Même logique — on évite le rechargement et on redirige via JS
+function interceptStartForm() {
+  document.querySelectorAll('form').forEach(form => {
+    const actionInput = form.querySelector('input[name="action"]');
+    if (actionInput?.value === 'start') {
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        await startGame();
+      });
+    }
+  });
 }
 
-async function joinGame(gameId) {
+async function joinGame(game_id, team_id) {
   try {
     const response = await fetch('ajax/join_game.php', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ game_id: gameId, user_id: USER_ID })
+      body: JSON.stringify({ game_id, team_id })
     });
     const data = await response.json();
     if (data.ok) {
-      document.getElementById('lobby-team')?.classList.remove('hidden');
-      if (startBtn) startBtn.disabled = true;
+      // Mettre à jour la liste des membres localement
+      renderTeamMembers(data.members);
+    } else {
+      alert(data.error ?? 'Impossible de rejoindre cette équipe.');
     }
   } catch (err) {
     console.error('Erreur joinGame :', err);
-  }
-}
-
-async function sendInvite() {
-  const pseudo = inviteInput?.value.trim();
-  if (!pseudo) return;
-  try {
-    const response = await fetch('ajax/invite_player.php', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ pseudo, game_id: GAME_ID, user_id: USER_ID })
-    });
-    const data = await response.json();
-    if (!data.ok) alert(data.error);
-    else if (inviteInput) inviteInput.value = '';
-  } catch (err) {
-    console.error('Erreur sendInvite :', err);
   }
 }
 
@@ -85,12 +78,37 @@ async function startGame() {
     const response = await fetch('ajax/start_game.php', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ game_id: GAME_ID, user_id: USER_ID })
+      body: JSON.stringify({ game_id: GAME_ID })
     });
     const data = await response.json();
     if (data.ok) window.location.href = 'game.php';
+    else alert(data.error ?? 'Impossible de démarrer la partie.');
   } catch (err) {
     console.error('Erreur startGame :', err);
+  }
+}
+
+async function sendInvite() {
+  const pseudo = inviteInput?.value.trim();
+  if (!pseudo) return;
+
+  const feedback = document.getElementById('invite-feedback');
+  try {
+    const response = await fetch('ajax/invite_player.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pseudo, game_id: GAME_ID, team_id: TEAM_ID })
+    });
+    const data = await response.json();
+    if (!data.ok) {
+      if (feedback) feedback.textContent = data.error ?? 'Joueur introuvable.';
+    } else {
+      if (feedback) feedback.textContent = `Invitation envoyée à ${pseudo}`;
+      if (inviteInput) inviteInput.value = '';
+      setTimeout(() => { if (feedback) feedback.textContent = ''; }, 3000);
+    }
+  } catch (err) {
+    console.error('Erreur sendInvite :', err);
   }
 }
 
@@ -113,10 +131,13 @@ async function acceptInvite() {
     const response = await fetch('ajax/join_game.php', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ game_id: pendingInvite.game_id, user_id: USER_ID })
+      body: JSON.stringify({
+        game_id: pendingInvite.game_id,
+        team_id: pendingInvite.team_id,
+      })
     });
     const data = await response.json();
-    if (data.ok) document.getElementById('lobby-team')?.classList.remove('hidden');
+    if (data.ok) renderTeamMembers(data.members);
   } catch (err) {
     console.error('Erreur acceptInvite :', err);
   }
@@ -128,31 +149,64 @@ function refuseInvite() {
   if (overlayInvite) overlayInvite.classList.remove('overlay--open');
 }
 
-function onTeamUpdate(data) {
-  if (!teamMembers || !data.membres) return;
-  teamMembers.innerHTML = data.membres.map(m => `
-    <div class="team-member">
-      <span>${escapeHtml(m.pseudo)}</span>
-    </div>
+// ── Mise à jour de la liste des membres ───────────────────────────────────
+function renderTeamMembers(members) {
+  if (!teamMembers || !members) return;
+  teamMembers.innerHTML = members.map(m => `
+    <li class="team-member ${m.id === USER_ID ? 'team-member--me' : ''}">
+      ${escapeHtml(m.pseudo)} ${m.id === USER_ID ? '(toi)' : ''}
+    </li>
   `).join('');
-  if (startBtn) startBtn.disabled = data.membres.length < 2;
 }
 
+function onTeamUpdate(data) {
+  const members = data.members ?? data.membres;
+  renderTeamMembers(members);
+}
+
+// ── Polling — vérifie si la partie a démarré toutes les 3s ───────────────
+// Fallback si le broadcast WebSocket game_started ne fonctionne pas
+function startPolling() {
+  if (!GAME_ID) return;
+  pollInterval = setInterval(async () => {
+    try {
+      const response = await fetch(`ajax/get_game_status.php?game_id=${GAME_ID}`);
+      if (!response.ok) return;
+      const data = await response.json();
+      if (data.status === 'playing') {
+        clearInterval(pollInterval);
+        window.location.href = 'game.php';
+      }
+    } catch (err) {}
+  }, 3000);
+}
+
+
+// ── WebSocket lobby ───────────────────────────────────────────────────────
 function lobbyWsConnect() {
   lobbyWs = new WebSocket(WS_URL);
 
   lobbyWs.addEventListener('open', () => {
     lobbyReconnectDelay = 1000;
-    lobbyWsSend({ type: 'lobby_join', user_id: USER_ID, pseudo: PSEUDO });
+    lobbyWsSend({
+      type:    'lobby_join',
+      user_id: USER_ID,
+      pseudo:  PSEUDO,
+      game_id: GAME_ID ?? '',
+      team_id: TEAM_ID ?? '',
+    });
   });
 
   lobbyWs.addEventListener('message', (event) => {
     try {
       const data = JSON.parse(event.data);
       switch (data.type) {
-        case 'invitation':   onInvitationReceived(data); break;
-        case 'team_update':  onTeamUpdate(data);         break;
-        case 'game_started': window.location.href = 'game.php'; break;
+        case 'invitation':   onInvitationReceived(data);          break;
+        case 'team_update':  onTeamUpdate(data);                  break;
+        case 'game_started':
+          clearInterval(pollInterval);
+          window.location.href = 'game.php';
+          break;
       }
     } catch (err) {
       console.error('WS lobby message invalide :', err);
