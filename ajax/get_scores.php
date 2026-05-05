@@ -34,9 +34,21 @@ foreach ($scores as &$entry) {
     $entry['team_id'] = get_player_team($game_id, $entry['user_id']);
 }
 
+// Récupérer l'indice du tour en cours
+$tour       = $game['tour'] ?? 1;
+$votes_file = GAMES_DIR . $game_id . '/tour_' . $tour . '_votes.json';
+$tour_data  = read_json($votes_file);
+$indice     = $tour_data['indice'] ?? null;
+
+// Ajouter les infos d'équipe pour chaque joueur
+foreach ($scores as &$entry) {
+    $entry['team_id'] = get_player_team($game_id, $entry['user_id']);
+}
+
 json_response([
     'ok'     => true,
     'scores' => $scores,
     'tour'   => $game['tour'],
     'status' => $game['status'],
+    'indice' => $indice,
 ]);
