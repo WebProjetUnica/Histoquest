@@ -12,6 +12,7 @@ if (!isset($_SESSION['user_id'])) {
 
 require_once 'php/config.php';
 require_once 'php/game_functions.php';
+require_once 'php/ws_functions.php';
 
 $user_id = $_SESSION['user_id'];
 $pseudo  = $_SESSION['pseudo'];
@@ -58,13 +59,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($game_id && can_start_game($game_id)) {
         $result = start_game($game_id);
         if ($result['ok']) {
+            // Broadcaster game_started à tous les joueurs via WebSocket
+            // On envoie au serveur WS via un appel socket PHP
+            broadcast_game_started($game_id);
             header('Location: game.php');
             exit;
         }
     }
     header('Location: lobby.php');
     exit;
-}
+    }
 }
 
 // ── Données pour l'affichage ───────────────────────────────────────────────
