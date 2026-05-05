@@ -59,12 +59,19 @@ write_json($votes_file, $votes_data);
 // Appliquer les points aux scores globaux dans users.json
 apply_points($tour_points);
 
+// Récupérer le nombre de membres de l'équipe
+$game        = get_game($game_id);
+$team        = $game['teams'][$team_id] ?? [];
+$total       = count($team['members'] ?? []);
+
+
 // Retourner le résultat complet
 json_response([
-    'ok'       => true,
-    'majority' => $majority,
-    'correct'  => $correct,
-    'points'   => $tour_points,
-    'hint_used'=> $hint_used,
+    'ok'         => true,
+    'majority'   => $majority,
+    'correct'    => $correct,
+    'points'     => $tour_points,
+    'hint_used'  => $hint_used,
     'is_correct' => ($majority === $correct),
+    'total'      => $total,
 ]);
